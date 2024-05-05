@@ -25,7 +25,7 @@ loginRouter.post('/', async (req, res) => {
     }
     const jwt = jsonwebtoken.sign(userToken, process.env.JWT_KEY!)
     req.session = { jwt }
-    res.status(200).json({ ...user, password: undefined })
+    return res.status(200).json({ ...user, password: undefined })
   })
 })
 

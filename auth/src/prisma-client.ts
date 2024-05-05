@@ -6,13 +6,15 @@ interface NewUser {
   email: string
   password: string
   name?: string
+  avatar?: string
 }
 
-export async function createUser(attr: NewUser)
-  : Promise<{ id: string, email: string }> {
+export async function createUser(attr: NewUser) {
   const user = await prisma.user.create({
     data: attr,
-    select: { id: true, email: true, name: true }
+    include: {
+      journeys: true
+    }
   })
   return user
 }
