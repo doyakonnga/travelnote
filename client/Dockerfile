@@ -1,4 +1,5 @@
-FROM node:alpine
+FROM node:20-alpine
+# https://github.com/yarnpkg/yarn/issues/9005
 
 WORKDIR /app
 COPY package.json .

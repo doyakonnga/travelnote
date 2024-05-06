@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Router, RequestHandler } from 'express'
 import 'express-async-errors'
 import cookieSession from 'cookie-session'
 import { signupRouter } from './routes/signup-router'
@@ -10,17 +10,24 @@ import { allUserRouter } from './routes/all-users-router'
 import { oauthRouter } from './routes/oauth-router'
 export const app = express()
 
+const v = '/api/v1'
+
 app.set('trust proxy', true)
 app.use(express.json())
 app.use(cookieSession({ signed: false }), reqUser)
 
-app.use('/user/signup', signupRouter)
-app.use('/user/login', loginRouter)
-app.use('/user/currentuser', (req, res) => res.json(req.user))
-app.use('/user/oauth', oauthRouter)
-app.use('/user', allUserRouter)
-app.use('/journey', journeyRouter)
-app.use('/journey/edit', journeyEditRouter)
+
+app.use(`${v}/user/signup`, signupRouter)
+app.use(`${v}/user/login`, loginRouter)
+app.use(`${v}/user/currentuser`, (req, res) => {
+  console.log('get request')
+  if (!req.user) return res.json({user: null})
+  return res.json({user: req.user})
+})
+app.use(`${v}/user/oauth`, oauthRouter)
+app.use(`${v}/user`, allUserRouter)
+app.use(`${v}/journey`, journeyRouter)
+app.use(`${v}/journey/edit`, journeyEditRouter)
 
 
 app.listen(3000, () => {

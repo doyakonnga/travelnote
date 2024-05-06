@@ -10,10 +10,17 @@ spec:
   - host: travelnote.com
     http:
       paths:
-      - path: /(user|journey)/?(.*)
-        pathType: ImplementationSpecific
+      - path: /api/v1/(user|journey)/?(.*)
+        pathType: Prefix
         backend:
           service:
             name: auth-svc
+            port:
+              number: 3000
+      - path: /?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: client-svc
             port:
               number: 3000

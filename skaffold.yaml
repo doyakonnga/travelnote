@@ -11,4 +11,10 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
+    - image: doyakonnga/client
+      context: ./client
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
   

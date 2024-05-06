@@ -8,16 +8,16 @@ import { createUser, findUser } from '../prisma-client'
 export const oauthRouter = express.Router()
 
 oauthRouter.get('/', async (req, res) => {
-  if (req.query.code) throw 'no-authorization-code'
+  if (!req.query.code) throw 'no-authorization-code'
 
   try {
     const gRes: { data: { access_token: string } } = await axios.post(
       'https://oauth2.googleapis.com/token',
       querystring.stringify({
-        code: req.query.code,
+        code: req.query.code as string,
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
-        redirect_uri: 'http://localhost:4000/user/oauth',
+        redirect_uri: 'http://travelnote.com/api/v1/user/oauth',
         grant_type: 'authorization_code'
       }), {
       headers: {
@@ -52,7 +52,7 @@ oauthRouter.get('/', async (req, res) => {
     req.session = { jwt }
 
 
-    return res.redirect('http://localhost:3000/')
+    return res.redirect('/')
 
   } catch (e: any) {
     console.log('////////// GOOGLE OAUTH ERROR /////////////////////////////////')
