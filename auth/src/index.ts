@@ -19,6 +19,10 @@ app.use(cookieSession({ signed: false }), reqUser)
 
 app.use(`${v}/user/signup`, signupRouter)
 app.use(`${v}/user/login`, loginRouter)
+app.use(`${v}/user/logout`, (req, res) => {
+  req.session = null
+  res.redirect('/')
+})
 app.use(`${v}/user/currentuser`, (req, res) => {
   console.log('get request')
   if (!req.user) return res.json({user: null})

@@ -1,13 +1,14 @@
-import axios from "axios"
+
 import Image from "next/image"
 import Link from "next/link"
-import { cookies } from 'next/headers'
 import UserDropdown from "./user-dropdown"
+import axios from "axios"
+import { cookies } from 'next/headers'
 
 const Header = async () => {
   const current = "block py-2 pr-4 pl-3 text-white rounded bg-blue-700 lg:bg-transparent lg:text-blue-700 lg:p-0 dark:text-white"
   const others = 'block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700'
-
+  
   const Cookie = cookies().getAll().map((c) => {
     return `${c.name}=${c.value};`
   }).join(' ')
@@ -16,21 +17,22 @@ const Header = async () => {
     id: string,
     email: string,
     name: string,
+    avatar: string,
     journeyIds: string[],
-  }
-  
+  } | null = null
+
   try {
-    currentUser = (await axios.get('http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/v1/user/currentuser', { 
-      headers: { 
+    currentUser = (await axios.get('http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/v1/user/currentuser', {
+      headers: {
         Host: "travelnote.com",
         Cookie
-      }}
+      }
+    }
     )).data.user
     console.log(currentUser)
-  } catch(e) {
-    console.log(e) 
+  } catch (e) {
+    console.log(e)
   }
-
 
   // Host is a forbidden header in the Fetch Standard now.
   // https://github.com/nodejs/node/issues/50305
@@ -62,19 +64,25 @@ const Header = async () => {
             </span>
           </Link>
           <div className="flex items-center lg:order-2">
-            <Link
-              href="/login"
-              className="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
-            >
-              Log in
-            </Link>
-            <a
-              href="#"
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-            >
-              Get started
-            </a>
-            <UserDropdown/>
+            { !currentUser &&
+              <div>
+                <Link
+                href="/login"
+                className="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+              >
+                Log in
+                </Link>
+                <Link
+                href="/signup"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                >
+                  Get started
+                </Link>
+              </div>
+            }
+              
+            { currentUser && <UserDropdown currentUser={currentUser} />}
+            
 
             <button
               data-collapse-toggle="mobile-menu-2"

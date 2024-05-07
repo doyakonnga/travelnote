@@ -8,6 +8,7 @@ declare global {
       id: string
       email: string
       name?: string
+      avatar?: string
       journeyIds: string[]
     }
     interface Request {
