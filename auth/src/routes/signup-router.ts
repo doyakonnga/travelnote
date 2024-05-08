@@ -13,6 +13,6 @@ signupRouter.post('/', async (req, res) => {
   scrypt(password, salt, 64, async (err, buf) => {
     password = `${buf.toString('hex')}.${salt}`
     const user = await createUser({ email, password, name })
-    return res.status(200).json({...user, password: undefined})
+    return res.status(200).json({ user: {...user, password: undefined}})
   })
 })

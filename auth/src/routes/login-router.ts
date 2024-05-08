@@ -5,28 +5,36 @@ import { findUser } from '../prisma-client'
 
 export const loginRouter = express.Router()
 
-loginRouter.post('/', async (req, res) => {
+loginRouter.post('/', async (req, res, next) => {
+
+  console.log('get login request')
   interface loginAttr { email: string, password: string }
   const { email, password }: loginAttr = req.body
   let user = await findUser({ email })
-  if (!user) throw 'not exist'
+  if (!user) throw 'email not exist'
   const [hashed, salt] = user.password.split('.')
 
-  scrypt(password, salt, 64, async (err, buf) => {
-    if (err) throw err
-    if (buf.toString('hex') !== hashed) throw 'password incorrect'
-
-    const journeyIds = user.journeys.map((j) => j.id)
-    const userToken: Express.UserToken = {
-      id: user.id,
-      email: user.email,
-      name: user.name || undefined,
-      avatar: user.avatar || undefined,
-      journeyIds
-    }
-    const jwt = jsonwebtoken.sign(userToken, process.env.JWT_KEY!)
-    req.session = { jwt }
-    return res.status(200).json({ ...user, password: undefined })
+  const asyncScrypt = (): Promise<Buffer> => new Promise((resolve, reject) => {
+    scrypt(password, salt, 64, async (err, buf) => {
+      if (err) return reject(err)
+      return resolve(buf)
+    })
   })
+  const buf = await asyncScrypt()
+
+  if (buf.toString('hex') !== hashed) return next('password incorrect')
+
+  const journeyIds = user.journeys.map((j) => j.id)
+  const userToken: Express.UserToken = {
+    id: user.id,
+    email: user.email,
+    name: user.name || undefined,
+    avatar: user.avatar || undefined,
+    journeyIds
+  }
+  const jwt = jsonwebtoken.sign(userToken, process.env.JWT_KEY!)
+  req.session = { jwt }
+  return res.status(200).json({ user: { ...user, password: undefined } })
+
 })
 

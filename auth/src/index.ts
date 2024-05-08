@@ -8,6 +8,7 @@ import { journeyRouter } from './routes/journey-router'
 import { journeyEditRouter } from './routes/journey-edit-router'
 import { allUserRouter } from './routes/all-users-router'
 import { oauthRouter } from './routes/oauth-router'
+import { errorHandler } from './middlewares/error-handler'
 export const app = express()
 
 const v = '/api/v1'
@@ -21,7 +22,7 @@ app.use(`${v}/user/signup`, signupRouter)
 app.use(`${v}/user/login`, loginRouter)
 app.use(`${v}/user/logout`, (req, res) => {
   req.session = null
-  res.redirect('/')
+  return res.redirect('/')
 })
 app.use(`${v}/user/currentuser`, (req, res) => {
   console.log('get request')
@@ -32,6 +33,12 @@ app.use(`${v}/user/oauth`, oauthRouter)
 app.use(`${v}/user`, allUserRouter)
 app.use(`${v}/journey`, journeyRouter)
 app.use(`${v}/journey/edit`, journeyEditRouter)
+
+app.all('*', (req, res) => {
+  throw '404'
+})
+
+app.use(errorHandler)
 
 
 app.listen(3000, () => {
