@@ -13,17 +13,17 @@ spec:
         app: auth
     spec:
       containers:
-      - name: auth
-        image: doyakonnga/auth
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
-          limits:
-            cpu: 200m
-            memory: 200Mi
-        ports:
-        - containerPort: 3000
+        - name: auth
+          image: doyakonnga/auth
+          resources:
+            requests:
+              cpu: 300m
+              memory: 300Mi
+            limits:
+              cpu: 300m
+              memory: 300Mi
+          ports:
+            - containerPort: 3000
 ---
 apiVersion: v1
 kind: Service
@@ -34,7 +34,7 @@ spec:
   selector:
     app: auth
   ports:
-  - name: auth
-    protocol: TCP
-    port: 3000
-    targetPort: 3000
+    - name: auth
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
