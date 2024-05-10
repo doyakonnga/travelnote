@@ -1,39 +1,23 @@
-
+// 'use client'
 import Image from "next/image"
 import Link from "next/link"
 import UserDropdown from "./user-dropdown"
-import axios from "axios"
-import { cookies } from 'next/headers'
+// import { useContext } from "react"
+// import { Context } from "@/app/provider" 
 
-const Header = async () => {
-  const current = "block py-2 pr-4 pl-3 text-white rounded bg-blue-700 lg:bg-transparent lg:text-blue-700 lg:p-0 dark:text-white"
-  const others = 'block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700'
-  
-  const Cookie = cookies().getAll().map((c) => {
-    return `${c.name}=${c.value};`
-  }).join(' ')
-
-  let currentUser: {
+const Header = async ({ currentUser }: {
+  currentUser:
+  {
     id: string,
     email: string,
     name: string,
-    avatar: string,
+    avatar: string
     journeyIds: string[],
-  } | null = null
-
-  try {
-    currentUser = (await axios.get('http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/v1/user/currentuser', {
-      headers: {
-        Host: "travelnote.com",
-        Cookie
-      }
-    }
-    )).data.user
-    console.log(currentUser)
-  } catch (e) {
-    console.log(e)
-  }
-
+  } | null
+}) => {
+  const current = "block py-2 pr-4 pl-3 text-white rounded bg-blue-700 lg:bg-transparent lg:text-blue-700 lg:p-0 dark:text-white"
+  const others = 'block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700'
+  
   // Host is a forbidden header in the Fetch Standard now.
   // https://github.com/nodejs/node/issues/50305
   // try {

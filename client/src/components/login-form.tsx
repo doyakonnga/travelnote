@@ -61,7 +61,7 @@ const LoginForm = () => {
       }
     } catch (e) {
       return {
-        id: randomBytes(4).toString('hex'),
+        id: randomBytes(4).toString('ascii'),
         message: 'error',
         errors: e as Errors,
       }
