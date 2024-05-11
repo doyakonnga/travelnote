@@ -1,57 +1,102 @@
 'use client'
 import Image from "next/image"
-import { ChangeEvent, useState } from "react"
-import { getUploadUrl } from "./actions"
+import { ChangeEvent, FormEvent, useEffect, useState } from "react"
+import { deleteFromS3, getUploadUrl, refresh } from "./actions"
 import axios from "axios"
 import { Sha256 } from '@aws-crypto/sha256-browser'
 import { randomBytes } from "crypto"
 import Alert from "./alert"
+import { redirect, usePathname, useRouter } from "next/navigation"
+import { revalidatePath } from "next/cache"
+
 const CreateJourneyForm = () => {
-  const [object, setObject] = useState<File | undefined>(undefined)
+  // const [object, setObject] = useState<File | undefined>(undefined)
+  const [name, setName] = useState('')
   const [objectUrl, setObjectUrl] = useState('')
-  const [errorMsg, setErrMsg] = useState('')
+  const [s3url, setS3url] = useState('')
   const [errorId, setErrId] = useState('')
+  const [errorMsg, setErrMsg] = useState('')
+  const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    const clear = () => { deleteFromS3(s3url) }
+    window.addEventListener('beforeunload', clear)
+    // router.events.on('routeChangeStart', clear)
+    // ↑ deprecated in next 14
+    return () => {
+      window.removeEventListener('beforeunload', clear)
+    }
+  }, [s3url])
 
   const handleFileInputChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (objectUrl) URL.revokeObjectURL(objectUrl)
+    setErrId('')
+    setErrMsg('')
+    // if (objectUrl) URL.revokeObjectURL(objectUrl)
     const file = e.target.files?.[0]
-    setObject(file)
-
+    // setObject(file)
     if (file) {
       setObjectUrl(URL.createObjectURL(file))
     } else {
       return setObjectUrl('')
     }
-    console.log(`[${file.name}, ${objectUrl}]`)
-
     try {
       const { type, size } = file
       const hash = new Sha256();
       hash.update(await file.arrayBuffer());
       const buf = await hash.digest()
       // const buf = await crypto.subtle.digest('sha256', await file.arrayBuffer());
-      // crypto.subtle is undefined when not using https
+      // crypto.subtle is undefined when not using HTTPS
       const checkSum = Array.from(new Uint8Array(buf)).
         map((b) => b.toString(16).padStart(2, '0')).join('')
-
       const url = await getUploadUrl(type, size, checkSum)
       if (typeof url !== 'string') throw Error(url.error)
       await axios.put(url, file,
         { headers: { "Content-Type": file.type } })
+      console.log(url.split('?')[0])
+      setS3url(url.split('?')[0])
     } catch (e) {
       console.log('e into catch')
       if (e instanceof Error) {
         setErrMsg(e.message)
         setErrId(randomBytes(4).toString('ascii'))
-        setObject(undefined)
+        // setObject(undefined)
         setObjectUrl('')
       }
       console.log(e)
     }
   }
 
+  const handleFileCancel = async () => {
+    setErrId('')
+    setErrMsg('')
+    if (objectUrl) URL.revokeObjectURL(objectUrl)
+    setObjectUrl('')
+    await deleteFromS3(s3url)
+    setS3url('')
+  }
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    console.log({
+      name,
+      // subtitle,
+      picture: s3url,
+    })
+    setLoading(true)
+    try {
+      axios.post('/api/v1/journey', {
+        name,
+        // subtitle,
+        picture: s3url,
+      })
+    } catch (e) { console.log(e) }
+    refresh()
+  }
+
+
   return (
-    <form className="mt-8 space-y-3" action="#" method="POST">
+    <form className="mt-8 space-y-3" action="#" method="POST"
+      onSubmit={handleSubmit}
+    >
       {errorId && errorMsg &&
         <Alert color={'red'} id={errorId}>{errorMsg}</Alert>
       }
@@ -62,7 +107,9 @@ const CreateJourneyForm = () => {
         <input
           className="text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
           type=""
-          placeholder="mail@gmail.com"
+          placeholder="name"
+          value={name}
+          onChange={(e) => { setName(e.target.value) }}
         />
       </div>
       <div className="grid grid-cols-1 space-y-2">
@@ -104,10 +151,7 @@ const CreateJourneyForm = () => {
               height={500}
             />
             <button type="button" className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 absolute right-0 top-0"
-              onClick={() => {
-                setObject(undefined)
-                setObjectUrl('')
-              }}
+              onClick={handleFileCancel}
             >
               <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -124,7 +168,7 @@ const CreateJourneyForm = () => {
       <div>
         <button
           type="submit"
-          className="my-5 w-full flex justify-center bg-black text-white p-2 rounded-md tracking-wide hover:bg-gray-800 focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-300"
+          className="my-5 w-full flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-300"
         >
           Setup
         </button>

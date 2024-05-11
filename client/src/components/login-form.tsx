@@ -8,6 +8,7 @@ import axios from 'axios'
 import Alert from './alert'
 import { randomBytes } from 'crypto'
 import { error } from 'console'
+import { refresh } from './actions'
 
 
 interface Errors {
@@ -31,7 +32,7 @@ const LoginButton = () => {
   return (
     < button
       type="submit"
-      className={"w-full text-white p-2 rounded-md hover:bg-gray-800 focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-300 " + (pending ? "bg-grey" : "bg-black")}
+      className={"w-full text-white p-2 rounded-md hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200 " + (pending ? "bg-gray-300" : "bg-gray-800")}
       disabled={pending}
     >
       {pending ? 'Loding...' : 'Log in'}
@@ -41,14 +42,11 @@ const LoginButton = () => {
 
 const LoginForm = () => {
   const router = useRouter()
-  
+
   const handleSummit = async (
     prevState: FormState,
     formData: FormData
   ): Promise<FormState> => {
-
-    console.log('handling summit')
-
     try {
       const { data, headers } = await axios.post(`/api/v1/user/login`, {
         email: formData.get('email'),
@@ -76,9 +74,10 @@ const LoginForm = () => {
 
   // console.log(formState.message)
   if (formState.message === 'success') {
-    router.replace('/');
-    return router.refresh();
-  } 
+    // router.replace('/');
+    // return router.refresh();
+    return refresh()
+  }
   const errorFields = formState.errors.response?.data.map((e) => e.field)
   // console.log(errorFields)
   console.log(formState.id)
@@ -100,7 +99,7 @@ const LoginForm = () => {
           name="email"
           className="mt-1 p-2 w-full border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
         />
-        {errorFields?.includes('email') && 
+        {errorFields?.includes('email') &&
           <Alert color='red' id={formState.id}>Email not existing; please check again.</Alert>}
       </div>
       <div>
@@ -116,7 +115,7 @@ const LoginForm = () => {
           name="password"
           className="mt-1 p-2 w-full border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
         />
-        {errorFields?.includes('password') && 
+        {errorFields?.includes('password') &&
           <Alert color='red' id={formState.id}>Password incorrect; please check again.</Alert>}
       </div>
 

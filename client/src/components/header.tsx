@@ -1,11 +1,12 @@
-// 'use client'
+'use client'
 import Image from "next/image"
 import Link from "next/link"
 import UserDropdown from "./user-dropdown"
+import { usePathname } from "next/navigation"
 // import { useContext } from "react"
 // import { Context } from "@/app/provider" 
 
-const Header = async ({ currentUser }: {
+const Header = ({ currentUser }: {
   currentUser:
   {
     id: string,
@@ -15,21 +16,14 @@ const Header = async ({ currentUser }: {
     journeyIds: string[],
   } | null
 }) => {
+  const pathname = usePathname()
+  console.log(pathname)
+
   const current = "block py-2 pr-4 pl-3 text-white rounded bg-blue-700 lg:bg-transparent lg:text-blue-700 lg:p-0 dark:text-white"
   const others = 'block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700'
-  
-  // Host is a forbidden header in the Fetch Standard now.
+
+  // Host is a forbidden header in the Fetch Standard.
   // https://github.com/nodejs/node/issues/50305
-  // try {
-  //   const response = await fetch('http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/v1/user/currentuser', { "headers": { Host: "travelnote.com" } })
-  //   if (!response.ok) {
-  //     throw new Error(`HTTP error! status: ${response.status}`);
-  //   }
-  //   const data = await response.json()
-  //   console.log('data:', data.user)
-  // } catch (error) {
-  //   console.error('error:', error)
-  // }
 
   return (
     <div>
@@ -48,25 +42,25 @@ const Header = async ({ currentUser }: {
             </span>
           </Link>
           <div className="flex items-center lg:order-2">
-            { !currentUser &&
+            {!currentUser &&
               <div>
                 <Link
-                href="/login"
-                className="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
-              >
-                Log in
+                  href="/login"
+                  className="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+                >
+                  Log in
                 </Link>
                 <Link
-                href="/signup"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                  href="/signup"
+                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                 >
                   Get started
                 </Link>
               </div>
             }
-              
-            { currentUser && <UserDropdown currentUser={currentUser} />}
-            
+
+            {currentUser && <UserDropdown currentUser={currentUser} />}
+
 
             <button
               data-collapse-toggle="mobile-menu-2"
@@ -110,7 +104,7 @@ const Header = async ({ currentUser }: {
               <li>
                 <Link
                   href="/"
-                  className={current}
+                  className={(pathname === '/') ? current : others}
                   aria-current="page"
                 >
                   Home
@@ -118,18 +112,18 @@ const Header = async ({ currentUser }: {
               </li>
               <li>
                 <Link
-                  href="/"
-                  className={others}
+                  href="/edit"
+                  className={(pathname.startsWith('/edit')) ? current : others}
                 >
-                  Company
+                  Edit
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/"
-                  className={others}
+                  href="/new"
+                  className={(pathname.startsWith('/new')) ? current : others}
                 >
-                  Marketplace
+                  Create
                 </Link>
               </li>
               <li>

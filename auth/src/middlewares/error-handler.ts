@@ -18,6 +18,10 @@ export const errorHandler = (
         return res.status(400)
           .json([{ field: 'password', message: 'Password Incorrect' }])
 
+      case 'Journey title required':
+        return res.status(400)
+          .json([{ field: 'title', message: 'Journey title required' }])
+
       case '404':
         return res.status(404)
           .json([{ field: 'route', message: 'the route is undefined on auth server' }])

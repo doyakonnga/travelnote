@@ -42,6 +42,8 @@ export async function allUser() {
 
 interface NewJourney {
   name: string
+  subtitle: string | null
+  picture: string | null
   members: {
     id: string
   }[]
@@ -64,7 +66,7 @@ export async function userJourneys(userId: string): Promise<{ id: string }[]> {
 }
 
 export async function createJourney(attr: NewJourney)
-  : Promise<JourneyWithId> {
+{
   const user = await prisma.user.findUnique({
     where: { id: attr.members[0].id }
   })
@@ -73,6 +75,8 @@ export async function createJourney(attr: NewJourney)
   return await prisma.journey.create({
     data: {
       name: attr.name,
+      subtitle: attr.subtitle,
+      picture: attr.picture,
       members: { connect: { id: user.id } }
     },
     include: { members: true }
@@ -80,12 +84,14 @@ export async function createJourney(attr: NewJourney)
 }
 
 export async function putJourney(attr: JourneyWithId)
-  : Promise<JourneyWithId> {
-  const { id, name, members } = attr
+{
+  const { id, name, subtitle, picture, members } = attr
   const journey = await prisma.journey.update({
     where: { id },
     data: {
       name,
+      subtitle,
+      picture,
       members: {
         set: [],
         connect: members
@@ -108,7 +114,7 @@ export async function putJourney(attr: JourneyWithId)
 export async function addMember(attr: {
   id: string,
   members: { id: string }[]
-}): Promise<JourneyWithId> {
+}) {
   const { id, members } = attr
   const journey = await prisma.journey.update({
     where: { id },

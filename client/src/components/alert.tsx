@@ -1,3 +1,4 @@
+'use client'
 import { Dispatch, SetStateAction, useState, useRef, MutableRefObject, useEffect } from "react";
 
 const Alert = ({ color, children, id }: {

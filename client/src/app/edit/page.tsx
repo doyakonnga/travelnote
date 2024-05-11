@@ -2,7 +2,6 @@ import JourneyCard from '@/components/journey-card'
 import Renew from '@/components/renew'
 import axios from 'axios'
 import { cookies } from 'next/headers'
-import Image from 'next/image'
 
 export default async function Home() {
 
@@ -30,6 +29,7 @@ export default async function Home() {
       title={j.name}
       subtitle={j.subtitle}
       picture={j.picture}
+      edit={true}
     />)
   } catch (e) { console.log(e) }
   // console.log(data)

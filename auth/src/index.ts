@@ -6,7 +6,7 @@ import { loginRouter } from './routes/login-router'
 import { reqUser } from './middlewares/req-user'
 import { journeyRouter } from './routes/journey-router'
 import { journeyEditRouter } from './routes/journey-edit-router'
-import { allUserRouter } from './routes/all-users-router'
+import { userRouter } from './routes/users-router'
 import { oauthRouter } from './routes/oauth-router'
 import { errorHandler } from './middlewares/error-handler'
 export const app = express()
@@ -24,13 +24,8 @@ app.use(`${v}/user/logout`, (req, res) => {
   req.session = null
   return res.redirect('/')
 })
-app.use(`${v}/user/currentuser`, (req, res) => {
-  console.log('get request')
-  if (!req.user) return res.json({user: null})
-  return res.json({user: req.user})
-})
 app.use(`${v}/user/oauth`, oauthRouter)
-app.use(`${v}/user`, allUserRouter)
+app.use(`${v}/user`, userRouter)
 app.use(`${v}/journey`, journeyRouter)
 app.use(`${v}/journey/edit`, journeyEditRouter)
 

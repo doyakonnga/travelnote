@@ -49,7 +49,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="h-dvh">
+      <body className="h-dvh bg-neutral-300">
         <Header currentUser={currentUser} />
         {children}
       </body>
