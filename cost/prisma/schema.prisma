@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// npx prisma init --datasource-provider postgresql
+// npx prisma migrate dev --name models-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Journey {
+  id           String        @id @default(uuid())
+  memberIds    String[]
+  consumptions Consumption[]
+}
+
+model Consumption {
+  id           String    @id @default(uuid())
+  isForeign    Boolean   @default(true)
+  rate         Float?
+  payingUserId String
+  createdAt    DateTime  @default(now())
+  journey      Journey   @relation(fields: [journeyId], references: [id])
+  journeyId    String
+  expenses      Expense[]
+}
+
+model Expense {
+  id            String      @id @default(uuid())
+  isPaid        Boolean     @default(false)
+  userId        String
+  amount        Float
+  consumption   Consumption @relation(fields: [consumptionId], references: [id])
+  consumptionId String
+
+  @@index([userId])
+}
