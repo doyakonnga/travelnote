@@ -17,6 +17,13 @@ spec:
             name: auth-svc
             port:
               number: 3000
+      - path: /api/v1/(expense|consumption|balance)/?(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: cost-svc
+            port:
+              number: 3000
       - path: /?(.*)
         pathType: ImplementationSpecific
         backend:

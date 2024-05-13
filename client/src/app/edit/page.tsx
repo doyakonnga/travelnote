@@ -1,4 +1,4 @@
-import JourneyCard from '@/components/journey-card'
+import JourneyCard from '@/components/journey-card-edit'
 import Renew from '@/components/renew'
 import axios from 'axios'
 import { cookies } from 'next/headers'

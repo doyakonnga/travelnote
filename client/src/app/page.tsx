@@ -1,8 +1,7 @@
-import JourneyCard from '@/components/journey-card'
+import JourneyCard from '@/components/journey-card-display'
 import Renew from '@/components/renew'
 import axios from 'axios'
 import { cookies } from 'next/headers'
-import Image from 'next/image'
 
 export default async function Home() {
 
@@ -27,12 +26,13 @@ export default async function Home() {
     })
     list = data.map((j) => <JourneyCard
       key={j.id}
+      journeyId={j.id}
       title={j.name}
       subtitle={j.subtitle}
       picture={j.picture}
     />)
   } catch (e) { console.log(e) }
-  // console.log(data)
+  
 
   return (
     <main className="flex flex-wrap min-h-screen flex-col items-center justify-between p-24">

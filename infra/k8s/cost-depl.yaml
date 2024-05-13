@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cost-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cost
+  template:
+    metadata:
+      labels:
+        app: cost
+    spec:
+      containers:
+        - name: cost
+          image: doyakonnga/cost
+          resources:
+            requests:
+              cpu: 300m
+              memory: 300Mi
+            limits:
+              cpu: 300m
+              memory: 300Mi
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cost-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: cost
+  ports:
+    - name: cost
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

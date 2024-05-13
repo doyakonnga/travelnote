@@ -1,7 +1,5 @@
 import express from 'express'
-import { createJourney, userJourneys } from '../prisma-client'
-import jsonwebtoken from 'jsonwebtoken'
-
+import { createJourney, findJourney, userJourneys } from '../prisma-client'
 
 export const journeyRouter = express.Router()
 
@@ -11,6 +9,14 @@ journeyRouter.get('/', async (req, res) => {
 
   const journeys = await userJourneys(req.user.id)
   return res.status(200).json(journeys)
+})
+
+journeyRouter.get('/:id', async (req, res) => {
+  const journey = await findJourney(req.params.id)
+  if (!journey) throw '404'
+  if (!journey.members.some((m) => m.id === req.user.id))
+    throw '401'
+  res.status(200).json({ journey })
 })
 
 journeyRouter.post('/', async (req, res) => {

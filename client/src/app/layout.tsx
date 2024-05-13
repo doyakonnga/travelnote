@@ -23,6 +23,20 @@ declare global {
     avatar: string
     journeyIds: string[]
   }
+
+  interface Member {
+    id: string
+    name: string
+    avatar: string
+  }
+
+  interface Journey {
+    id: string
+    name: string
+    subtitle: string | null
+    picture: string | null
+    members: Member[]
+  }
 }
 
 export default async function RootLayout({

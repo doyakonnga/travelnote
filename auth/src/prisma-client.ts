@@ -53,7 +53,7 @@ export interface JourneyWithId extends NewJourney {
   id: string
 }
 
-export async function userJourneys(userId: string): Promise<{ id: string }[]> {
+export async function userJourneys(userId: string) {
   return await prisma.journey.findMany({
     where: {
       members: {
@@ -61,12 +61,21 @@ export async function userJourneys(userId: string): Promise<{ id: string }[]> {
           id: userId
         }
       }
+    },
+    include: {
+      members: true
     }
   })
 }
 
-export async function createJourney(attr: NewJourney)
-{
+export async function findJourney(id: string) {
+  return await prisma.journey.findUnique({
+    where: { id },
+    include: { members: true }
+  })
+}
+
+export async function createJourney(attr: NewJourney) {
   const user = await prisma.user.findUnique({
     where: { id: attr.members[0].id }
   })
@@ -83,8 +92,7 @@ export async function createJourney(attr: NewJourney)
   })
 }
 
-export async function putJourney(attr: JourneyWithId)
-{
+export async function putJourney(attr: JourneyWithId) {
   const { id, name, subtitle, picture, members } = attr
   const journey = await prisma.journey.update({
     where: { id },
