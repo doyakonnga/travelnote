@@ -27,7 +27,7 @@ const JourneyCard = (props: Props) => {
   }
 
   return (
-    <div key={key} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto">
+    <div key={key} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto z-10">
       <div className="bg-white p-6 rounded-lg flex flex-wrap">
         <Image className="h-72  rounded w-full object-cover object-center mb-6" src={picture || 'https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} alt="journey picture" width={720} height={400} />
         <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{title}</h1>
@@ -112,8 +112,8 @@ const JourneyCard = (props: Props) => {
                 onClick={(e) => {
                   e.preventDefault
                   fetch(`/api/v1/user?email=${keyword}`)
-                    .then((response) => response.json() )
-                    .then((data) => setFoundUser(data.user) )
+                    .then((response) => response.json())
+                    .then((data) => setFoundUser(data.user))
                     .catch((err) => console.log(err))
                 }}
               >

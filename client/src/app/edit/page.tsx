@@ -35,8 +35,10 @@ export default async function Home() {
   // console.log(data)
 
   return (
-    <main className="flex flex-wrap min-h-screen flex-col items-center justify-between p-24">
+    <main className="relative flex flex-wrap min-h-screen flex-col items-center justify-between p-24">
+      
       <Renew />
+      <div className="absolute bg-black opacity-60 inset-0 z-0" />
       Content
       {list}
     </main>

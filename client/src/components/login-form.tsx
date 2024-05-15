@@ -76,7 +76,7 @@ const LoginForm = () => {
   if (formState.message === 'success') {
     // router.replace('/');
     // return router.refresh();
-    return refresh()
+    refresh()
   }
   const errorFields = formState.errors.response?.data.map((e) => e.field)
   // console.log(errorFields)

@@ -10,7 +10,8 @@ export async function areUsersInJourney(userIds: string[], journeyId: string) {
 
 export async function journeyConsumptions(id: string) {
   return await prisma.consumption.findMany({
-    where: { journeyId: id }
+    where: { journeyId: id },
+    include: { expenses: true }
   })
 }
 

@@ -30,7 +30,7 @@ model Consumption {
   createdAt    DateTime  @default(now())
   journey      Journey   @relation(fields: [journeyId], references: [id])
   journeyId    String
-  expenses      Expense[]
+  expenses     Expense[]
 }
 
 model Expense {
