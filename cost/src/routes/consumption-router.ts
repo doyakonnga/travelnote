@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { createConsumption, areUsersInJourney, journeyConsumptions } from '../prisma-client'
 
@@ -13,16 +13,20 @@ consumptionRouter.get('/', async (req, res) => {
 
 consumptionRouter.post('/', [
   body('journeyId').isString(),
-  body('isForeign').default(true).isBoolean(),
+  body('name').isString(),
+  body('isForeign').default(false).isBoolean(),
   body('rate').default(0).isNumeric(),
-  body('payingUserId').isString(),
+  (req: Request, res: Response, next: NextFunction) => {
+    body('payingUserId').default((req as any).user?.id).isString()(req, res, next)
+  }
+  ,
   body('expenses').custom(expenses => {
     expenses.forEach((e: { userId: string, amount: number }) => {
-        if (typeof e.userId !== 'string')
-          throw new Error('userId has to be string')
-        if (typeof e.amount !== 'number')
-          throw new Error('amount has to be number')
-        return 0
+      if (typeof e.userId !== 'string')
+        throw new Error('userId has to be string')
+      if (typeof e.amount !== 'number')
+        throw new Error('amount has to be number')
+      return 0
       // error thrown here will be caught by express-validator
       // and appear in validationResult(req).array().[{msg}]
     })

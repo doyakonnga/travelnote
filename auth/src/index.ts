@@ -17,7 +17,6 @@ app.set('trust proxy', true)
 app.use(express.json())
 app.use(cookieSession({ signed: false }), reqUser)
 
-
 app.use(`${v}/user/signup`, signupRouter)
 app.use(`${v}/user/login`, loginRouter)
 app.use(`${v}/user/logout`, (req, res) => {

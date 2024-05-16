@@ -18,9 +18,9 @@ declare global {
 }
 
 export const reqUser = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.session?.jwt) return next()
+  if (!(req as any).session?.jwt) return next()
   req.user = jsonwebtoken.verify(
-    req.session.jwt,
+    (req as any).session.jwt,
     process.env.JWT_KEY!) as Express.UserToken
   return next()
 }

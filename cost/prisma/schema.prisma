@@ -24,6 +24,7 @@ model Journey {
 
 model Consumption {
   id           String    @id @default(uuid())
+  name         String
   isForeign    Boolean   @default(true)
   rate         Float?
   payingUserId String
@@ -35,6 +36,7 @@ model Consumption {
 
 model Expense {
   id            String      @id @default(uuid())
+  description   String?
   isPaid        Boolean     @default(false)
   userId        String
   amount        Float

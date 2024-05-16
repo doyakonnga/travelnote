@@ -30,8 +30,9 @@ interface ExpenAttr {
 }
 interface ConsAttr {
   journeyId: string
+  name: string
   isForeign: boolean
-  rate: number
+  rate: number | undefined
   payingUserId: string
   expenses: ExpenAttr[]
 }
@@ -39,6 +40,7 @@ export async function createConsumption(attrs: ConsAttr) {
   return await prisma.consumption.create({
     data: {
       journeyId: attrs.journeyId,
+      name: attrs.name,
       isForeign: attrs.isForeign,
       rate: attrs.rate || null,
       payingUserId: attrs.payingUserId,

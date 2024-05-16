@@ -10,6 +10,7 @@ const app = express()
 
 const v = '/api/v1'
 
+app.set('trust proxy', true)
 app.use(express.json())
 app.use(
   cookieSession({ signed: false }),

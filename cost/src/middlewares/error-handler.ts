@@ -43,6 +43,7 @@ export const errorHandler = (
           .json([{ field: 'route', message: 'the route is undefined' }])
     }
   } else {
+    console.log(err)
     res.status(500).json([{ field: 'unspecific', message: 'uncatched errors happened' }])
   }
 }

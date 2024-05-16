@@ -13,15 +13,24 @@ type Consumption = {
   }[]
 }
 
-const ConsumptionCard = ({ consumption }: { consumption: Consumption }) => {
+const ConsumptionCard = ({ consumption, members }: {
+  consumption: Consumption
+  members: Member[]
+}) => {
   return (
-    <div>
-      {consumption.expenses.map((ex) => (
-        <div className={ex.isPaid ? 'bg-teal-400' : 'bg-rose-400'}>
-          <h1>{ex.userId}</h1>
-          <span>{ex.amount}</span>
-        </div>
-      ))}
+    <div className="flex flex-wrap">
+      {consumption.expenses.map((ex) => {
+        const u = members.find((m) => m.id === ex.userId)
+        return (
+          <div className={"w-8/12 flex rounded-md ml-auto mr-2 p-1 space-x-1 " + (ex.isPaid ? 'bg-teal-400' : 'bg-rose-400')}>
+            <div className="shrink-0 w-3/12 ml-auto space-x-1">
+              <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={u?.avatar || '/user.png'} alt="user avatar" />
+              <span>{(u?.name || "user")}</span>
+            </div>
+            <div className="shrink-0 w-2/12 text-end pr-2">{ex.amount}</div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -32,16 +41,21 @@ const ConsumptionPage = async ({ params }: {
 
   const Cookie = cookies().getAll().map((c) => `${c.name}=${c.value};`).join(' ')
   let consumptions: Consumption[] = []
+  let journey: { members: Member[] }
+  let jId = params.journeyId
 
   try {
-    const { data } = await axios
-      .get(`${process.env.NGINX_HOST}/api/v1/consumption/?journeyId=${params.journeyId}`, {
-        headers: {
-          Host: "travelnote.com",
-          Cookie
-        }
-      })
+    const [{ data }, { data: data2 }] = await Promise.all([
+      axios.get(`${process.env.NGINX_HOST}/api/v1/consumption/?journeyId=${jId}`, {
+        headers: { Host: "travelnote.com", Cookie }
+      }),
+      axios.get(`${process.env.NGINX_HOST}/api/v1/journey/${jId}`, {
+        headers: { Host: "travelnote.com", Cookie }
+      }).catch(() => { return { data: { journey: { members: [] } } } })
+    ]
+    )
     consumptions = data.consumptions
+    journey = data2.journey
   } catch (e) {
     if (axios.isAxiosError(e) && e.response) {
       if (e.response.status === 404)
@@ -57,9 +71,9 @@ const ConsumptionPage = async ({ params }: {
   }
 
   return (
-    <div>
+    <div className='space-y-2 bg-slate-600 border-slate-700 rounded-md px-6 py-4'>
       {consumptions.map((c) =>
-        <ConsumptionCard key={c.id} consumption={c} />
+        <ConsumptionCard key={c.id} consumption={c} members={journey.members} />
       )}
     </div>
   )

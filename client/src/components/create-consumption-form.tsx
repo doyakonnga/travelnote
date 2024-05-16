@@ -1,7 +1,9 @@
 'use client'
 
+import axios from "axios"
 import { useState } from "react"
 import { useFormState } from "react-dom"
+import Alert from "./alert"
 
 interface ExpenAttr {
   userId: string
@@ -12,7 +14,9 @@ interface FormState {
 }
 
 
-const CreateConsumptionForm = ({ users }: { users: Member[] }) => {
+const CreateConsumptionForm = ({ journeyId, users }: {
+  journeyId: string; users: Member[]
+}) => {
 
   const [amounts, setAmounts] = useState<{ [key: string]: number }>({
     total: 0,
@@ -29,10 +33,23 @@ const CreateConsumptionForm = ({ users }: { users: Member[] }) => {
         amount: Number(formData.get(u.id))
       }
     })
-    const isForeign = formData.get('isForeign')
-    console.log({ isForeign, expenses })
-    return {
-      message: ''
+    const name = formData.get('item')
+    const isForeign = formData.get('isForeign') ? true : false
+    try {
+      await axios.post("/api/v1/consumption", {
+        journeyId,
+        name,
+        isForeign,
+        expenses
+      })
+      return {
+        message: 'success'
+      }
+    } catch (e) {
+      console.log(e)
+      return {
+        message: 'failure'
+      }
     }
   }
   const [formState, formAction] = useFormState(handleSubmit, {
@@ -125,6 +142,9 @@ const CreateConsumptionForm = ({ users }: { users: Member[] }) => {
           Submit
         </button>
       </div>
+
+      {formState.message === 'success' && <Alert color={"green"} id={''}> Adding success! </Alert>}
+      {formState.message === 'failure' && <Alert color={"red"} id={''}> Adding failure! </Alert>}
     </form>
   )
 }
