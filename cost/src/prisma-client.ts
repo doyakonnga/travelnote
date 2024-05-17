@@ -11,7 +11,8 @@ export async function areUsersInJourney(userIds: string[], journeyId: string) {
 export async function journeyConsumptions(id: string) {
   return await prisma.consumption.findMany({
     where: { journeyId: id },
-    include: { expenses: true }
+    include: { expenses: {orderBy: {userId: 'asc'}} },
+    orderBy: { createdAt: 'desc' }
   })
 }
 
@@ -20,7 +21,9 @@ export async function userExpenses(userId: string, journeyId: string) {
     where: {
       userId,
       consumption: { journeyId }
-    }
+    },
+    include: { consumption: true },
+    orderBy: { consumption: { createdAt: 'desc' } }
   })
 }
 
@@ -56,5 +59,19 @@ export async function createConsumption(attrs: ConsAttr) {
       }
     },
     include: { expenses: true }
+  })
+}
+
+export interface ExpenseQuery {
+  id: string
+  isPaid?: boolean
+  description?: string
+  amount?: number
+}
+export async function modifyExpense(query: ExpenseQuery) {
+  const { id, ...data } = query
+  return await prisma.expense.update({
+    where: { id },
+    data
   })
 }

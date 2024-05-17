@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
+import '../middlewares/req-user'
 import { createConsumption, areUsersInJourney, journeyConsumptions } from '../prisma-client'
 
 export const consumptionRouter = express.Router()
@@ -17,7 +18,7 @@ consumptionRouter.post('/', [
   body('isForeign').default(false).isBoolean(),
   body('rate').default(0).isNumeric(),
   (req: Request, res: Response, next: NextFunction) => {
-    body('payingUserId').default((req as any).user?.id).isString()(req, res, next)
+    body('payingUserId').default(req.user?.id).isString()(req, res, next)
   }
   ,
   body('expenses').custom(expenses => {

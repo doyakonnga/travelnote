@@ -1,39 +1,9 @@
+import ConsumptionCard from "@/components/consumption-card"
 import axios from "axios"
 import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
 
-type Consumption = {
-  id: string
-  isForeign: boolean
-  expenses: {
-    id: string
-    userId: string
-    amount: number
-    isPaid: boolean
-  }[]
-}
 
-const ConsumptionCard = ({ consumption, members }: {
-  consumption: Consumption
-  members: Member[]
-}) => {
-  return (
-    <div className="flex flex-wrap">
-      {consumption.expenses.map((ex) => {
-        const u = members.find((m) => m.id === ex.userId)
-        return (
-          <div className={"w-8/12 flex rounded-md ml-auto mr-2 p-1 space-x-1 " + (ex.isPaid ? 'bg-teal-400' : 'bg-rose-400')}>
-            <div className="shrink-0 w-3/12 ml-auto space-x-1">
-              <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={u?.avatar || '/user.png'} alt="user avatar" />
-              <span>{(u?.name || "user")}</span>
-            </div>
-            <div className="shrink-0 w-2/12 text-end pr-2">{ex.amount}</div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 const ConsumptionPage = async ({ params }: {
   params: { journeyId: string }
@@ -55,6 +25,7 @@ const ConsumptionPage = async ({ params }: {
     ]
     )
     consumptions = data.consumptions
+    console.log(consumptions)
     journey = data2.journey
   } catch (e) {
     if (axios.isAxiosError(e) && e.response) {
@@ -70,11 +41,21 @@ const ConsumptionPage = async ({ params }: {
     return <h1>Server error</h1>
   }
 
+  let date = ''
+  let array: (Consumption | string)[] = []
+  consumptions.forEach((c) => {
+    if (c.createdAt !== date)
+      array.push(date = c.createdAt.slice(0, 10))
+    array.push(c)
+  })
   return (
-    <div className='space-y-2 bg-slate-600 border-slate-700 rounded-md px-6 py-4'>
-      {consumptions.map((c) =>
-        <ConsumptionCard key={c.id} consumption={c} members={journey.members} />
-      )}
+    <div className='mt-4'>
+      {array.map((c) => {
+        if (typeof c === 'string') return <h1 className="m-2">{c}</h1>
+        return (
+          <ConsumptionCard key={c.id} consumption={c} members={journey.members} />
+        )
+      })}
     </div>
   )
 }

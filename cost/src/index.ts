@@ -15,10 +15,9 @@ app.use(express.json())
 app.use(
   cookieSession({ signed: false }),
   reqUser,
-  requireInJourney
 )
 
-app.use(`${v}/consumption`, consumptionRouter)
+app.use(`${v}/consumption`, requireInJourney, consumptionRouter)
 app.use(`${v}/expense`, expenseRouter)
 // app.use(`${v}/balance`)
 app.all('*', (req, res) => { throw '404' })

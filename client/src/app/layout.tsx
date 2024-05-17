@@ -37,6 +37,22 @@ declare global {
     picture: string | null
     members: Member[]
   }
+
+  type Expense = {
+    id: string
+    userId: string
+    amount: number
+    isPaid: boolean
+  }
+
+  type Consumption = {
+    id: string
+    name: string
+    isForeign: boolean
+    payingUserId: string
+    createdAt: string
+    expenses: Expense[]
+  }
 }
 
 export default async function RootLayout({
