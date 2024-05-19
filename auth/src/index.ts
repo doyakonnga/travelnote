@@ -9,6 +9,7 @@ import { journeyEditRouter } from './routes/journey-edit-router'
 import { userRouter } from './routes/users-router'
 import { oauthRouter } from './routes/oauth-router'
 import { errorHandler } from './middlewares/error-handler'
+import connectRedpanda from './redpanda'
 export const app = express()
 
 const v = '/api/v1'
@@ -34,7 +35,20 @@ app.all('*', (req, res) => {
 
 app.use(errorHandler)
 
+const start = async () => {
+  try {
+    const [producer, consumer] = await connectRedpanda
 
-app.listen(3000, () => {
-  console.log('listening on port 3000')
-})
+    process.on('SIGINT', () => {
+      producer.disconnect
+      process.kill(process.pid, "SIGINT")
+    });
+    process.on('SIGTERM', () => producer.disconnect);
+  } catch(e) { console.error(e) }
+
+  app.listen(3000, () => {
+    console.log('listening on 3000')
+  })
+
+}
+

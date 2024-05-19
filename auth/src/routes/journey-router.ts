@@ -30,6 +30,6 @@ journeyRouter.post('/', async (req, res) => {
     picture,
     members: [{ id: req.user.id }]
   })
-
+  
   return res.status(200).json(journey)
 })
