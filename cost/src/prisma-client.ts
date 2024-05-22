@@ -1,6 +1,17 @@
 import { PrismaClient } from '@prisma/client'
 export const prisma = new PrismaClient()
 
+export async function createJourney(journey: {
+  id: string; members: { id: string }[]
+}) {
+  return await prisma.journey.create({
+    data: {
+      id: journey.id,
+      memberIds: journey.members.map((m) => m.id)
+    }
+  })
+}
+
 export async function areUsersInJourney(userIds: string[], journeyId: string) {
   const journey = await prisma.journey.findUnique({ where: { id: journeyId } })
   if (!journey) throw '404'
@@ -11,7 +22,7 @@ export async function areUsersInJourney(userIds: string[], journeyId: string) {
 export async function journeyConsumptions(id: string) {
   return await prisma.consumption.findMany({
     where: { journeyId: id },
-    include: { expenses: {orderBy: {userId: 'asc'}} },
+    include: { expenses: { orderBy: { userId: 'asc' } } },
     orderBy: { createdAt: 'desc' }
   })
 }

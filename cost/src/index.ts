@@ -6,6 +6,8 @@ import { requireInJourney } from './middlewares/require-in-journey'
 import { errorHandler } from './middlewares/error-handler'
 import { consumptionRouter } from './routes/consumption-router'
 import { expenseRouter } from './routes/expense-router'
+import connectRedpanda from './redpanda'
+import { JourneyListener } from './events/listeners.ts/journey-listener'
 const app = express()
 
 const v = '/api/v1'
@@ -24,4 +26,22 @@ app.all('*', (req, res) => { throw '404' })
 
 app.use(errorHandler)
 
-app.listen(3000, () => console.log('listening on 3000'))
+const start = async () => {
+  try {
+    const [producer, consumer] = await connectRedpanda
+    console.log('connected to redpanda')
+    await new JourneyListener(consumer).listen()
+    process.on('SIGINT', () => {
+      producer.disconnect
+      // process.kill(process.pid, "SIGINT")
+    });
+    process.on('SIGTERM', () => producer.disconnect);
+  } catch (e) { console.error(e) }
+
+  app.listen(3000, () => {
+    console.log('listening on 3000')
+  })
+
+}
+
+start()
