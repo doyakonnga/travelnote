@@ -1,6 +1,6 @@
 
 export enum Topics {
-  JourneyCreated = "journey-created"
+  J = "journey"
 
 }
 
@@ -9,9 +9,18 @@ export interface Event {
   value: any
 }
 
-export interface JourneyCreatedEvent extends Event {
-  topic: Topics.JourneyCreated
+export interface JourneyEvent extends Event {
+  topic: Topics.J
   value: {
-    
+    action: "created" | "modified"
+    journey: {
+      id: string
+      name: string
+      subtitle: string | null
+      picture: string | null
+      members: {
+        id: string
+      }[]
+    }
   }
 }

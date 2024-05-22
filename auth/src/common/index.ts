@@ -21,7 +21,7 @@ export abstract class Listener<E extends Event> {
         { topic, partition, message }: EachMessagePayload) => {
         const value: E["value"] = JSON.parse(message.value as any)
         const { offset } = message
-        this.onMessage({ value, offset, consumer: this.consumer })
+        await this.onMessage({ value, offset, consumer: this.consumer })
       }
     })
   }
@@ -34,7 +34,7 @@ export abstract class Publisher<E extends Event> {
     try {
       await this.producer.send({
         topic: this.topic,
-        messages: [{ key, value }]
+        messages: [{ key, value: JSON.stringify(value) }]
       })
     } catch(e) { console.error(e) }
   }

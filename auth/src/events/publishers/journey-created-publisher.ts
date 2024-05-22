@@ -1,6 +1,6 @@
-import { Publisher, JourneyCreatedEvent, Topics } from "../../common";
+import { Publisher, JourneyEvent, Topics } from "../../common";
 
 
-export class JourneyCreatedPublisher extends Publisher<JourneyCreatedEvent> {
-  topic = Topics.JourneyCreated as const
+export class JourneyPublisher extends Publisher<JourneyEvent> {
+  topic = Topics.J
 }

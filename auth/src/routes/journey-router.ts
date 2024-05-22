@@ -1,5 +1,7 @@
 import express from 'express'
 import { createJourney, findJourney, userJourneys } from '../prisma-client'
+import connectRedpanda from '../redpanda'
+import { JourneyPublisher } from '../events/publishers/journey-created-publisher'
 
 export const journeyRouter = express.Router()
 
@@ -31,5 +33,12 @@ journeyRouter.post('/', async (req, res) => {
     members: [{ id: req.user.id }]
   })
   
+  const [producer, ] = await connectRedpanda
+  const journeyProducer = new JourneyPublisher(producer)
+  journeyProducer.send(journey.id, {
+    action: 'created',
+    journey
+  })
+
   return res.status(200).json(journey)
 })

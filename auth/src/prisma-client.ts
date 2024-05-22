@@ -40,7 +40,7 @@ export async function allUser() {
   })
 }
 
-interface NewJourney {
+export interface NewJourney {
   name: string
   subtitle: string | null
   picture: string | null

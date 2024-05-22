@@ -38,10 +38,10 @@ app.use(errorHandler)
 const start = async () => {
   try {
     const [producer, consumer] = await connectRedpanda
-
+    console.log('connected to redpanda')
     process.on('SIGINT', () => {
       producer.disconnect
-      process.kill(process.pid, "SIGINT")
+      // process.kill(process.pid, "SIGINT")
     });
     process.on('SIGTERM', () => producer.disconnect);
   } catch(e) { console.error(e) }
@@ -52,3 +52,4 @@ const start = async () => {
 
 }
 
+start()
