@@ -78,6 +78,7 @@ const CreateConsumptionForm = ({ journeyId, users }: {
         <input type="number" id="total" name="total"
           className="mt-1 p-1 w-40 border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
           value={amounts.total || ''}
+          // when changing total value, zero every individual value
           onChange={(e) => {
             setAmounts((prev) => {
               Object.keys(prev).forEach((key) => {

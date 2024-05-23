@@ -3,7 +3,7 @@ import Renew from '@/components/renew'
 import axios from 'axios'
 import { cookies } from 'next/headers'
 
-export default async function Home() {
+export default async function EditPage() {
 
   const Cookie = cookies().getAll().map((c) => {
     return `${c.name}=${c.value};`

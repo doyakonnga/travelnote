@@ -8,6 +8,7 @@ import { consumptionRouter } from './routes/consumption-router'
 import { expenseRouter } from './routes/expense-router'
 import connectRedpanda from './redpanda'
 import { JourneyListener } from './events/listeners.ts/journey-listener'
+import { Listener } from './common'
 const app = express()
 
 const v = '/api/v1'
@@ -32,12 +33,14 @@ const start = async () => {
     console.log('connected to redpanda')
     await new JourneyListener(consumer).listen()
     process.on('SIGINT', () => {
-      producer.disconnect
-      // process.kill(process.pid, "SIGINT")
+      producer.disconnect()
+      consumer.disconnect()
     });
-    process.on('SIGTERM', () => producer.disconnect);
+    process.on('SIGTERM', () => {
+      producer.disconnect()
+      consumer.disconnect()
+    });
   } catch (e) { console.error(e) }
-
   app.listen(3000, () => {
     console.log('listening on 3000')
   })

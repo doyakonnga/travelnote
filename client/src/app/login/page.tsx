@@ -3,7 +3,7 @@ import Link from "next/link"
 import GoogleOauthButton from '@/components/google-oauth-button'
 import LoginForm from "@/components/login-form"
 
-const page = () => {
+const LoginPage = () => {
   return   (
   <div className="w-full h-5/6 bg-gray-100 flex items-center justify-center my-auto">
     <div className="max-w-md w-full p-6">
@@ -54,4 +54,4 @@ const page = () => {
   </div>)
 }
 
-export default page
+export default LoginPage

@@ -1,6 +1,6 @@
 
 
-const page = () => {
+const JourneyPage = () => {
   return (
     <div>
       
@@ -8,4 +8,4 @@ const page = () => {
   )
 }
 
-export default page
+export default JourneyPage

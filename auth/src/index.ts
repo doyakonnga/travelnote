@@ -40,10 +40,13 @@ const start = async () => {
     const [producer, consumer] = await connectRedpanda
     console.log('connected to redpanda')
     process.on('SIGINT', () => {
-      producer.disconnect
-      // process.kill(process.pid, "SIGINT")
+      producer.disconnect()
+      consumer.disconnect()
     });
-    process.on('SIGTERM', () => producer.disconnect);
+    process.on('SIGTERM', () => {
+      producer.disconnect()
+      consumer.disconnect()
+    });
   } catch(e) { console.error(e) }
 
   app.listen(3000, () => {

@@ -25,7 +25,7 @@ const ConsumptionPage = async ({ params }: {
     ]
     )
     consumptions = data.consumptions
-    console.log(consumptions)
+    // console.log(consumptions)
     journey = data2.journey
   } catch (e) {
     if (axios.isAxiosError(e) && e.response) {
@@ -42,16 +42,16 @@ const ConsumptionPage = async ({ params }: {
   }
 
   let date = ''
-  let array: (Consumption | string)[] = []
+  let consumpsAndDates: (Consumption | string)[] = []
   consumptions.forEach((c) => {
     if (c.createdAt !== date)
-      array.push(date = c.createdAt.slice(0, 10))
-    array.push(c)
+      consumpsAndDates.push(date = c.createdAt.slice(0, 10))
+    consumpsAndDates.push(c)
   })
   return (
     <div className='mt-4'>
-      {array.map((c) => {
-        if (typeof c === 'string') return <h1 className="m-2">{c}</h1>
+      {consumpsAndDates.map((c) => {
+        if (typeof c === 'string') return <h1 key={c} className="m-2">{c}</h1>
         return (
           <ConsumptionCard key={c.id} consumption={c} members={journey.members} />
         )

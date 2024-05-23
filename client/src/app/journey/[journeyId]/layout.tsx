@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import CreateConsumptionForm from "@/components/create-consumption-form"
+import SelectionBar from "@/components/selection-bar"
 
 
 const JourneyLayout = async ({ params, children }: {
@@ -43,6 +44,7 @@ const JourneyLayout = async ({ params, children }: {
       <div className="max-w-4xl w-full p-6">
         <h1 className="text-2xl font-semibold mb-6 text-black text-center"></h1>
         <CreateConsumptionForm journeyId={journey.id} users={journey.members} />
+        <SelectionBar></SelectionBar>
         {children}
       </div>
     </div>

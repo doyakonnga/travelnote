@@ -1,20 +1,25 @@
 
+import { Journey } from "@prisma/client";
 import { JourneyEvent, Listener, Topics } from "../../common";
-import { createJourney } from "../../prisma-client";
+import { createJourney, modifyJourney } from "../../prisma-client";
 
 export class JourneyListener extends Listener<JourneyEvent> {
   topic = Topics.J
-  onMessage = async ({ value, partition, offset, commit } : {
+  onMessage = async ({ value, offset, commit } : {
     value: JourneyEvent["value"]
-    partition: number
     offset: string
     commit: () => Promise<void>
   }) => {
-    if (value.action === 'created') {
-      const journey = await createJourney(value.journey)
-      await commit();
-      console.log('event consumed: journey-created, id: ', journey.id)
-    }
+    const { action, journey: j } = value
+    let journey: Journey
+    if (action === 'created') 
+      journey = await createJourney(j)
+    else if ( action === 'modified')
+      journey = await modifyJourney(j)
+    else throw 'wrong action type'
     
+    await commit();
+    console.log(`event consumed: journey-${action}, id: ${journey.id}`)
+    return
   }
 }

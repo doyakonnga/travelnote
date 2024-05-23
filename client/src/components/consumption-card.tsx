@@ -54,7 +54,9 @@ const ConsumptionCard = ({ consumption, members }: {
       {consumpState.expenses.map((ex) => {
         const user = members.find((m) => m.id === ex.userId)
         return (
+          // each expense
           <div key={ex.id} className={"w-8/12 min-w-64 flex rounded-md ml-auto mr-2 p-1 space-x-1 " + (ex.isPaid ? 'bg-teal-400' : 'bg-rose-400')}>
+            {/* edit button */}
             {(consumpState.payingUserId !== ex.userId) &&
               editButton({
                 onClick: () => {
@@ -62,6 +64,7 @@ const ConsumptionCard = ({ consumption, members }: {
                 }
               })
             }
+            {/* checkbox for isPaid */}
             {(editedEx === ex.id) &&
               <div className="inline-block ml-2 mr-auto">
                 <input type="checkbox" id="isPaid" value="true" checked={ex.isPaid} onChange={() => handleIsPaidChange(ex)} />

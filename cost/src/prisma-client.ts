@@ -12,6 +12,17 @@ export async function createJourney(journey: {
   })
 }
 
+export async function modifyJourney(journey: {
+  id: string; members: { id: string }[]
+}) {
+  return await prisma.journey.update({ 
+    where: { id: journey.id }, 
+    data: {
+      memberIds: journey.members.map((m) => m.id)
+    }
+  })
+}
+
 export async function areUsersInJourney(userIds: string[], journeyId: string) {
   const journey = await prisma.journey.findUnique({ where: { id: journeyId } })
   if (!journey) throw '404'

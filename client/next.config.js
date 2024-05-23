@@ -8,6 +8,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'travelnote-dev-s3.s3.ap-northeast-3.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 }
