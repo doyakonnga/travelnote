@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express"
+import "./req-user"
 
 export async function requireInJourney(
   req: Request, 

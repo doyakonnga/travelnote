@@ -9,6 +9,7 @@ import { expenseRouter } from './routes/expense-router'
 import connectRedpanda from './redpanda'
 import { JourneyListener } from './events/listeners.ts/journey-listener'
 import { Listener } from './common'
+import { balanceRouter } from './routes/balance-router'
 const app = express()
 
 const v = '/api/v1'
@@ -22,7 +23,7 @@ app.use(
 
 app.use(`${v}/consumption`, requireInJourney, consumptionRouter)
 app.use(`${v}/expense`, expenseRouter)
-// app.use(`${v}/balance`)
+app.use(`${v}/balance`, requireInJourney, balanceRouter)
 app.all('*', (req, res) => { throw '404' })
 
 app.use(errorHandler)

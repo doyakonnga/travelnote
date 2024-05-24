@@ -3,6 +3,7 @@
 
 import axios from "axios"
 import { useState } from "react"
+import EditConsumptionModal from '@/components/edit-consumption-modal'
 
 const ConsumptionCard = ({ consumption, members }: {
   consumption: Consumption
@@ -10,6 +11,7 @@ const ConsumptionCard = ({ consumption, members }: {
 }) => {
   const [consumpState, setConsumpState] = useState(consumption)
   const [editedEx, setEditedEx] = useState('')
+  const [isEditingConsump, setIsEditingConsump] = useState(false)
   const handleIsPaidChange = async (ex: Expense) => {
     setEditedEx('')
     try {
@@ -49,7 +51,9 @@ const ConsumptionCard = ({ consumption, members }: {
     <div className='flex flex-wrap space-y-2 bg-slate-600 border-slate-700 rounded-md p-4'>
       <h1 className="w-full space-x-2 ml-2">
         <span className="text-white">{consumpState.name}</span>
-        {editButton({})}
+        {editButton({onClick: () => {
+          setIsEditingConsump(true)
+        }})}
       </h1>
       {consumpState.expenses.map((ex) => {
         const user = members.find((m) => m.id === ex.userId)
@@ -80,8 +84,13 @@ const ConsumptionCard = ({ consumption, members }: {
             </div>
           </div>
         )
-      })}
+      })} 
+      
+      { isEditingConsump &&
+        <EditConsumptionModal journeyId="" users={members} handleCancel={()=> {setIsEditingConsump(false)}}/>
+      }
     </div>
+    
   )
 }
 

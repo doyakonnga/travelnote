@@ -15,8 +15,8 @@ export async function createJourney(journey: {
 export async function modifyJourney(journey: {
   id: string; members: { id: string }[]
 }) {
-  return await prisma.journey.update({ 
-    where: { id: journey.id }, 
+  return await prisma.journey.update({
+    where: { id: journey.id },
     data: {
       memberIds: journey.members.map((m) => m.id)
     }
@@ -46,6 +46,21 @@ export async function userExpenses(userId: string, journeyId: string) {
     },
     include: { consumption: true },
     orderBy: { consumption: { createdAt: 'desc' } }
+  })
+}
+
+export async function unpaidExpenses(journeyId: string) {
+  return await prisma.expense.findMany({
+    where: {
+      consumption: { journeyId },
+      isPaid: false
+    },
+    include: {
+      consumption: { select: { 
+        payingUserId: true,
+        isForeign: true
+      } }
+    }
   })
 }
 
