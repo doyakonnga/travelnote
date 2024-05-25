@@ -2,8 +2,9 @@
 'use client'
 
 import axios from "axios"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import EditConsumptionModal from '@/components/edit-consumption-modal'
+import Alert from "./alert"
 
 const ConsumptionCard = ({ consumption, members }: {
   consumption: Consumption
@@ -11,23 +12,23 @@ const ConsumptionCard = ({ consumption, members }: {
 }) => {
   const [consumpState, setConsumpState] = useState(consumption)
   const [editedEx, setEditedEx] = useState('')
-  const [isEditingConsump, setIsEditingConsump] = useState(false)
+  const [displayEditModal, setDisplayEditModal] = useState(false)
+  const [editModalId, setEditModalId] = useState('')
+  const [editModalMsg, setEditModalMsg] = useState('')
+
   const handleIsPaidChange = async (ex: Expense) => {
     setEditedEx('')
     try {
       await axios.patch(`/api/v1/expense/${ex.id}`, { isPaid: !ex.isPaid })
       setConsumpState((prev => {
         const exs = prev.expenses.map((e) => {
-          if (e.id === ex.id) 
-            return { ...e, isPaid: !ex.isPaid }      
+          if (e.id === ex.id)
+            return { ...e, isPaid: !ex.isPaid }
           return e
         })
         return { ...prev, expenses: exs }
       }))
-    } catch (e) {
-      console.log(e)
-
-    }
+    } catch (e) { console.log(e) }
   }
 
   const editButton = (props: {}) => (<svg
@@ -51,9 +52,11 @@ const ConsumptionCard = ({ consumption, members }: {
     <div className='flex flex-wrap space-y-2 bg-slate-600 border-slate-700 rounded-md p-4'>
       <h1 className="w-full space-x-2 ml-2">
         <span className="text-white">{consumpState.name}</span>
-        {editButton({onClick: () => {
-          setIsEditingConsump(true)
-        }})}
+        {editButton({
+          onClick: () => {
+            setDisplayEditModal(true)
+          }
+        })}
       </h1>
       {consumpState.expenses.map((ex) => {
         const user = members.find((m) => m.id === ex.userId)
@@ -84,13 +87,25 @@ const ConsumptionCard = ({ consumption, members }: {
             </div>
           </div>
         )
-      })} 
-      
-      { isEditingConsump &&
-        <EditConsumptionModal journeyId="" users={members} handleCancel={()=> {setIsEditingConsump(false)}}/>
+      })}
+
+      {editModalMsg &&
+        <Alert color="green" id={editModalId}>{editModalMsg}</Alert>
+      }
+
+      {displayEditModal &&
+        <EditConsumptionModal
+          consumption={consumpState}
+          setConsumpState={setConsumpState}
+          users={members}
+          handleClose={(id?: string, message?: string) => {
+            setDisplayEditModal(false)
+            if (id) setEditModalId(id)
+            if (message) setEditModalMsg(message)
+          }} />
       }
     </div>
-    
+
   )
 }
 

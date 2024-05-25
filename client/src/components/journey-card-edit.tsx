@@ -136,6 +136,9 @@ const JourneyCard = (props: Props) => {
             </div>
           </div>
         }
+        {(option === 1) && foundUser &&
+          <div></div>
+        }
       </div>
     </div>
   )

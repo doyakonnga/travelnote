@@ -49,7 +49,9 @@ declare global {
     id: string
     name: string
     isForeign: boolean
+    rate: number
     payingUserId: string
+    journeyId: string
     createdAt: string
     expenses: Expense[]
   }

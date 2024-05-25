@@ -48,7 +48,10 @@ export async function deleteFromS3(url: string) {
   catch (e) { console.error('s3 upload error', e) }
 }
 
-export async function refresh() {
-  revalidatePath('/')
-  redirect('/')
+export async function refresh(path?: string) {
+  const targetPath = path || '/'
+  revalidatePath(targetPath)
+  redirect(targetPath)
 }
+
+export { revalidatePath }

@@ -56,10 +56,12 @@ export async function unpaidExpenses(journeyId: string) {
       isPaid: false
     },
     include: {
-      consumption: { select: { 
-        payingUserId: true,
-        isForeign: true
-      } }
+      consumption: {
+        select: {
+          payingUserId: true,
+          isForeign: true
+        }
+      }
     }
   })
 }
@@ -99,13 +101,36 @@ export async function createConsumption(attrs: ConsAttr) {
   })
 }
 
+export async function updateConsumption(attrs: ConsAttr & { id: string }) {
+  const { id, rate, expenses, ...data } = attrs
+  return await prisma.consumption.update({
+    where: { id },
+    data: {
+      ...data,
+      rate: rate || null,
+      expenses: {
+        deleteMany: {},
+        createMany: {
+          data: expenses.map((expense) => {
+            return {
+              ...expense,
+              isPaid: expense.userId === data.payingUserId
+            }
+          }).filter((expense) => expense.amount)
+        }
+      }
+    },
+    include: { expenses: true }
+  })
+}
+
 export interface ExpenseQuery {
   id: string
   isPaid?: boolean
   description?: string
   amount?: number
 }
-export async function modifyExpense(query: ExpenseQuery) {
+export async function updateExpense(query: ExpenseQuery) {
   const { id, ...data } = query
   return await prisma.expense.update({
     where: { id },

@@ -25,7 +25,7 @@ const Alert = ({ color, children, id }: {
   const [title, context] = children.split('; ')
 
   return (
-    <div className={"shadow-md p-1 flex flex-row rounded-lg m-1 " + (!show? 'hidden' : '')}
+    <div className={"shadow-md p-1 flex flex-row rounded-lg m-1 bg-white " + (!show? 'hidden' : '')}
       // id={id}
     >
       <div className={promptClass} />

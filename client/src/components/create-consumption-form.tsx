@@ -35,10 +35,12 @@ const CreateConsumptionForm = ({ journeyId, users }: {
     })
     const name = formData.get('item')
     const isForeign = formData.get('isForeign') ? true : false
+    const rate = Number(formData.get('rate'))
     try {
       await axios.post("/api/v1/consumption", {
         journeyId,
         name,
+        rate,
         isForeign,
         expenses
       })
@@ -68,7 +70,8 @@ const CreateConsumptionForm = ({ journeyId, users }: {
           <input type="checkbox" id='isForeign' name='isForeign' value='true' />
           <label htmlFor="isForeign" className="flex items-center mx-1"> is foreign currency</label>
         </div>
-        <input type="number" id='rate' name='rate' placeholder="Exchange Rate"
+        <input type="number" step="any" id='rate' name='rate'
+          placeholder="Exchange Rate"
           className="mt-1 p-1 w-40 border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
         />
       </div>
@@ -111,7 +114,7 @@ const CreateConsumptionForm = ({ journeyId, users }: {
             <img className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9" src={u.avatar || '/user.png'} alt="user avatar" />
             {u.name}
           </label>
-          <input type="number" id={u.id} name={u.id}
+          <input type="number" step="any" id={u.id} name={u.id}
             className="mt-1 p-1 w-40 border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
             value={amounts[u.id] || ''}
             onChange={(e) => {
