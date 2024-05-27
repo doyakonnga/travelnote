@@ -1,37 +1,75 @@
 'use client'
 
+import axios from "axios"
 import Image from "next/image"
 import { useState } from "react"
+import Alert from './alert'
 
 interface Props {
-  key: string
+  journeyId: string
   title: string
   subtitle: string | null
   picture: string | null
-  edit?: true
 }
 interface User {
+  id: string
   name: string
   email: string
   avatar: string
 }
 const JourneyCard = (props: Props) => {
-  const { key, title, subtitle, picture } = props
-  const edit = props.edit || false
+  const { journeyId, title, subtitle, picture } = props
   const [option, setOption] = useState(0)
   const [keyword, setKeyword] = useState('')
   const [foundUser, setFoundUser] = useState<User | null>(null)
+  const [confirmModal, setConfirmModal] = useState('')
+  const [reqState, setReqState] = useState({ result: '', message: '' })
+  const [loading, setLoading] = useState(false)
   const changeOption = (n: number) => {
     if (option === n) return setOption(0)
     return setOption(n)
   }
+  const handleConfirm = async () => {
+    if (option === 1) {
+      try {
+        setLoading(true)
+        if (!foundUser) throw new Error('user not found')
+        await axios.post('/api/v1/journey/edit', {
+          id: journeyId,
+          members: [{ id: foundUser.id }]
+        })
+        setKeyword('')
+        setFoundUser(null)
+        setReqState({
+          result: 'success',
+          message: 'The user has been added to the journey group.'
+        })
+      } catch (e) {
+        console.log(e)
+        setReqState({
+          result: 'failure',
+          message: 'Failure; please try again later.'
+        })
+      } finally {
+        setConfirmModal('')
+        setLoading(false)
+      }
+    } else if (option === 2) {
+      try{
+        await axios.patch('/api/v1/journey/edit', {
+          id: journeyId,
+          quitingMemberId: ''
+        })
+      } catch (e) { console.log(e) }
+    } 
+  }
 
   return (
-    <div key={key} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto z-10">
+    <div key={journeyId} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto z-10">
       <div className="bg-white p-6 rounded-lg flex flex-wrap">
         <Image className="h-72  rounded w-full object-cover object-center mb-6" src={picture || 'https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} alt="journey picture" width={720} height={400} />
         <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{title}</h1>
-        <div className={"inline-block ml-auto" + (edit ? '' : ' hidden')}>
+        <div className="inline-block ml-auto">
           <svg
             fill="#000000"
             height="18px"
@@ -89,7 +127,10 @@ const JourneyCard = (props: Props) => {
             id="3"
             className="bi bi-trash-fill inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
             viewBox="0 0 16 16"
-            onClick={() => { changeOption(3) }}
+            onClick={() => { 
+              changeOption(3)
+              setConfirmModal('Are you sure you want to quit the journey? Please note that if you are last user, all of data in this group will be lost permanently.')
+            }}
           >
             <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
           </svg>
@@ -97,6 +138,7 @@ const JourneyCard = (props: Props) => {
         </div>
         <p className="leading-relaxed text-base">{subtitle}</p>
 
+        {/* adding user */}
         {(option === 1) &&
           <div className="w-full">
             <div className="pt-2 text-gray-600 w-fit relative">
@@ -106,15 +148,19 @@ const JourneyCard = (props: Props) => {
                 name="search"
                 placeholder="Email"
                 value={keyword}
-                onChange={(e) => { setKeyword(e.target.value) }}
+                onChange={(e) => { 
+                  setKeyword(e.target.value) 
+                  setFoundUser(null)
+                }}
               />
-              <button type="submit" className="absolute right-0 top-0 mt-5 mr-4"
+              <button type="button" className="absolute right-0 top-0 mt-5 mr-4"
                 onClick={(e) => {
-                  e.preventDefault
+                  setLoading(true)
                   fetch(`/api/v1/user?email=${keyword}`)
                     .then((response) => response.json())
                     .then((data) => setFoundUser(data.user))
                     .catch((err) => console.log(err))
+                    .finally(() => setLoading(false))
                 }}
               >
                 <svg
@@ -136,10 +182,49 @@ const JourneyCard = (props: Props) => {
             </div>
           </div>
         }
+        {(option === 1) && loading &&
+          <h1>Loading...</h1>
+        }
         {(option === 1) && foundUser &&
-          <div></div>
+          <div className="flex space-3">
+            <div className="shrink-0 w-3/12 min-w-32 ml-auto space-x-1 flex items-center">
+              <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={foundUser.avatar || '/user.png'} alt="user avatar" />
+              <span>{foundUser.name}</span>
+            </div>
+            <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200"
+              onClick={() => {
+                setConfirmModal('Are you sure you want to add this user to the journey? The invited user will only be removed from the group if they voluntarily leave.')
+              }}
+            >
+              Invite
+            </button>
+          </div>
+        }
+        {confirmModal &&
+          <div className="fixed inset-0 m-0 z-20 bg-black bg-opacity-25 backdrop-blur-sm flex justify-center items-center">
+            <div className="z-30 bg-white p-4 rounded flex-col justify-center items-center w-80">
+              <h1>{confirmModal}</h1>
+              { loading? (<h1>Loading...</h1>) :
+                <div className="flex justify-between">
+                <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200"
+                  onClick={handleConfirm}
+                >
+                  OK
+                </button>
+                <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
+                  onClick={() => { setConfirmModal('') }}
+                >
+                  Cancel
+                </button>
+              </div>}
+            </div>
+          </div>
         }
       </div>
+      {(reqState.result === 'success') &&
+        <Alert color="green" id=''>{reqState.message}</Alert>}
+      {(reqState.result === 'failure') &&
+        <Alert color="red" id=''>{reqState.message}</Alert>}
     </div>
   )
 }

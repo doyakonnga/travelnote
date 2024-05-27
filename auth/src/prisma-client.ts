@@ -144,3 +144,31 @@ export async function addMember(attr: {
   })
   return journey
 }
+
+export async function memberQuit(attr: {
+  id: string,
+  memberId: string
+}) {
+  const { id, memberId } = attr
+  const journey = await prisma.journey.update({
+    where: { id },
+    data: {
+      members: {
+        disconnect: {
+          id: memberId
+        }
+      }
+    },
+    include: {
+      members: {
+        select: {
+          "id": true,
+          "name": true,
+          "avatar": true,
+          "email": true,
+        }
+      }
+    }
+  })
+  return journey
+}

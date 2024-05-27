@@ -26,10 +26,10 @@ export default async function EditPage() {
     })
     list = data.map((j) => <JourneyCard
       key={j.id}
+      journeyId={j.id}
       title={j.name}
       subtitle={j.subtitle}
       picture={j.picture}
-      edit={true}
     />)
   } catch (e) { console.log(e) }
   // console.log(data)
