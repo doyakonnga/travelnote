@@ -1,10 +1,10 @@
 
 import { Journey } from "@prisma/client";
-import { JourneyEvent, Listener, Topics } from "../../common";
+import { ConsumptionEvent, JourneyEvent, Listener, Topics } from "../../common";
 import { createJourney, modifyJourney } from "../../prisma-client";
 
 export class JourneyListener extends Listener<JourneyEvent> {
-  topic = Topics.J
+  topic = Topics.J as const
   onMessage = async ({ value, offset, commit } : {
     value: JourneyEvent["value"]
     offset: string
@@ -21,5 +21,12 @@ export class JourneyListener extends Listener<JourneyEvent> {
     await commit();
     console.log(`event consumed: journey-${action}, id: ${journey.id}`)
     return
+  }
+}
+
+export class ConsumptionListener extends Listener<ConsumptionEvent> {
+  topic = Topics.C as const
+  onMessage = async ({}) => {
+    
   }
 }

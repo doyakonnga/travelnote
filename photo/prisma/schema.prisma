@@ -21,15 +21,14 @@ model Journey {
 }
 
 model Consumption {
-  id        String  @id
-  name      String
+  id        String  @id @default(uuid())
   journey   Journey @relation(fields: [journeyId], references: [id])
   journeyId String
   Photo     Photo[]
 }
 
 model Album {
-  id        String  @id
+  id        String  @id @default(uuid())
   name      String
   userId    String
   journey   Journey @relation(fields: [journeyId], references: [id])
@@ -38,10 +37,15 @@ model Album {
 }
 
 model Photo {
-  id            String       @id
+  id            String       @id @default(uuid())
+  url           String
+  description   String?
   userId        String
+  createdAt     DateTime     @default(now())
   album         Album        @relation(fields: [albumId], references: [id])
   albumId       String
   consumption   Consumption? @relation(fields: [consumptionId], references: [id])
   consumptionId String?
+
+  @@index([createdAt])
 }

@@ -22,6 +22,9 @@ export const errorHandler = (
       case 'Journey title required':
         return res.status(400)
           .json([{ field: 'title', message: 'Journey title required' }])
+      case 'scope not specified':
+        return res.status(400)
+          .json([{ field: 'query', message: 'scope not specified'}])
 
       case 'journeyId param not provided':
         return res.status(400)
