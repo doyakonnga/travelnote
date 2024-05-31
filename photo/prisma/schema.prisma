@@ -17,23 +17,25 @@ model Journey {
   id           String        @id @default(uuid())
   memberIds    String[]
   consumptions Consumption[]
-  Album        Album[]
+  albums       Album[]
 }
 
 model Consumption {
   id        String  @id @default(uuid())
   journey   Journey @relation(fields: [journeyId], references: [id])
   journeyId String
-  Photo     Photo[]
+  photos    Photo[]
 }
 
 model Album {
   id        String  @id @default(uuid())
-  name      String
+  name      String  
   userId    String
   journey   Journey @relation(fields: [journeyId], references: [id])
   journeyId String
-  Photo     Photo[]
+  photos    Photo[]
+
+  @@unique([name, journeyId])
 }
 
 model Photo {

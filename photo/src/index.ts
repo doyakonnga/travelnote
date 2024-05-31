@@ -28,6 +28,7 @@ const start = async () => {
     const [producer, consumer] = await connectRedpanda
     console.log('connected to redpanda')
     await new JourneyListener(consumer).listen()
+    await 
     process.on('SIGINT', () => {
       producer.disconnect()
       consumer.disconnect()

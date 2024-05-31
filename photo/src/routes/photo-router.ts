@@ -1,5 +1,5 @@
 import express from 'express'
-import { albumPhotoById, consumptionPhotoById, createPhoto } from '../prisma-client'
+import { albumPhotoById, consumptionPhotoById, createPhoto, deletePhotoById } from '../prisma-client'
 import { body } from 'express-validator'
 
 export const photoRouter = express.Router()
@@ -41,3 +41,11 @@ photoRouter.post('/',
   }
 )
 
+photoRouter.delete('/',
+  body('id').isString(),
+  async (req, res) => {
+    await deletePhotoById(req.body.id)
+    return res.status(200).json({ })
+
+  }
+)

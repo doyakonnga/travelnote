@@ -34,7 +34,7 @@ export async function createConsumption(c: {
   })
 }
 
-export async function deleteConsumption({ id }: { id: string }) {
+export async function deleteConsumptionById(id: string) {
   return await prisma.consumption.delete({ where: { id } })
 }
 
@@ -53,6 +53,48 @@ export async function createAlbum({ name, userId, journeyId }: {
     data: {
       name, userId, journeyId
     }
+  })
+}
+
+export async function updateAlbum({ id, name }: {
+  id: string
+  name: string
+}) {
+  return await prisma.album.update({
+    where: { id },
+    data: { name },
+    include: { photos: true }
+  })
+}
+
+export async function moveAllphotos(props: {
+  originId: string
+  targetName: string
+}) {
+  const album = await prisma.album.findFirst({
+    where: {
+      journey: {
+        albums: { 
+          some: { id: props.originId } 
+        }
+      },
+      name: props.targetName
+    }
+  }) 
+  if (!album) throw '404' 
+  await prisma.photo.updateMany({
+    where: {
+      albumId: props.originId
+    },
+    data: {
+      albumId: album.id
+    }
+  })
+}
+
+export async function deleteAlbumById(id: string) {
+  return await prisma.album.delete({
+    where: { id }
   })
 }
 
@@ -101,5 +143,5 @@ export async function updatePhoto(attrs: {
 }
 
 export async function deletePhotoById(id: string) {
-  return await prisma.photo.delete({ where: { id }})
+  return await prisma.photo.delete({ where: { id } })
 }
