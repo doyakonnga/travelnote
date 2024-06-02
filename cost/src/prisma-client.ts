@@ -124,6 +124,10 @@ export async function updateConsumption(attrs: ConsAttr & { id: string }) {
   })
 }
 
+export async function deleteConsumptionById(id: string) {
+  return await prisma.consumption.delete({ where: { id }})
+}
+
 export interface ExpenseQuery {
   id: string
   isPaid?: boolean

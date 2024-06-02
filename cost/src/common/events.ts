@@ -1,7 +1,7 @@
 
 export enum Topics {
-  J = "journey"
-
+  J = "journey",
+  C = "consumption"
 }
 
 export interface Event {
@@ -21,6 +21,17 @@ export interface JourneyEvent extends Event {
       members: {
         id: string
       }[]
+    }
+  }
+}
+
+export interface ConsumptionEvent extends Event {
+  topic: Topics.C
+  value: {
+    action: "created" | "modified" | "deleted"
+    consumption: {
+      id: string
+      journeyId: string
     }
   }
 }

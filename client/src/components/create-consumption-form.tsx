@@ -1,9 +1,10 @@
 'use client'
 
 import axios from "axios"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useFormState } from "react-dom"
 import Alert from "./alert"
+import { usePathname, useRouter } from "next/navigation"
 
 interface ExpenAttr {
   userId: string
@@ -17,7 +18,9 @@ interface FormState {
 const CreateConsumptionForm = ({ journeyId, users }: {
   journeyId: string; users: Member[]
 }) => {
-
+  // const path = usePathname()
+  const ref = useRef<HTMLFormElement>(null)
+  const router = useRouter()
   const [amounts, setAmounts] = useState<{ [key: string]: number }>({
     total: 0,
     ...users.reduce((acc, cur) => { return { ...acc, [cur.id]: 0 } }, {})
@@ -44,6 +47,11 @@ const CreateConsumptionForm = ({ journeyId, users }: {
         isForeign,
         expenses
       })
+      // if (!document.getElementById("form")) 
+      //   throw new Error('form not exist');
+      // (document.getElementById("form") as HTMLFormElement).reset()
+      ref.current?.reset()
+      router.refresh()
       return {
         message: 'success'
       }
@@ -60,7 +68,7 @@ const CreateConsumptionForm = ({ journeyId, users }: {
 
 
   return (
-    <form action={formAction} className='space-y-2 bg-slate-200 border-slate-300 rounded-md px-6 py-4'>
+    <form action={formAction} ref={ref} className='space-y-2 bg-slate-200 border-slate-300 rounded-md px-6 py-4'>
       <div className="flex justify-between border-b-4 border-gray-400 pb-4 ">
         <label htmlFor="total" className="block shrink-0 w-2/12 flex items-center">Item</label>
         <input type="text" name="item" placeholder="Item name" className="w-10/12 mt-1 p-1 rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300" />

@@ -40,7 +40,7 @@ model Expense {
   isPaid        Boolean     @default(false)
   userId        String
   amount        Float
-  consumption   Consumption @relation(fields: [consumptionId], references: [id])
+  consumption   Consumption @relation(fields: [consumptionId], references: [id], onDelete: Cascade)
   consumptionId String
 
   @@index([userId])

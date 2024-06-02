@@ -6,10 +6,9 @@ import { requireInJourney } from './middlewares/require-in-journey'
 import { errorHandler } from './middlewares/error-handler'
 import { consumptionRouter } from './routes/consumption-router'
 import { expenseRouter } from './routes/expense-router'
-import connectRedpanda from './redpanda'
-import { JourneyListener } from './events/listeners.ts/journey-listener'
-import { Listener } from './common'
 import { balanceRouter } from './routes/balance-router'
+import { JourneyListener } from './events/listeners/journey-listener'
+import connectRedpanda from './redpanda'
 const app = express()
 
 const v = '/api/v1'

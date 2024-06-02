@@ -5,20 +5,30 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import EditConsumptionModal from '@/components/edit-consumption-modal'
 import Alert from "./alert"
+import ConfirmModal from "./ConfirmModal"
+import { useRouter } from "next/navigation"
 
 const ConsumptionCard = ({ consumption, members }: {
   consumption: Consumption
   members: Member[]
 }) => {
+  const router= useRouter()
   const [consumpState, setConsumpState] = useState(consumption)
   const [editedEx, setEditedEx] = useState('')
+
   const [displayEditModal, setDisplayEditModal] = useState(false)
   const [editModalId, setEditModalId] = useState('')
   const [editModalMsg, setEditModalMsg] = useState('')
 
+  const [confirmDeleteModel, setConfirmDeleteModel] = useState(false)
+
+  const [loading, setLoading] = useState(false)
+
+
   const handleIsPaidChange = async (ex: Expense) => {
     setEditedEx('')
     try {
+      setLoading(true)
       await axios.patch(`/api/v1/expense/${ex.id}`, { isPaid: !ex.isPaid })
       setConsumpState((prev => {
         const exs = prev.expenses.map((e) => {
@@ -28,7 +38,8 @@ const ConsumptionCard = ({ consumption, members }: {
         })
         return { ...prev, expenses: exs }
       }))
-    } catch (e) { console.log(e) }
+    } catch (e) { console.log(e) 
+    } finally { setLoading(false) }
   }
 
   const editButton = (props: {}) => (<svg
@@ -48,15 +59,32 @@ const ConsumptionCard = ({ consumption, members }: {
     />
   </svg>)
 
+  const deleteButton = ( props:{} ) => {
+    return (<svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={16}
+      height={16}
+      fill="currentColor"
+      id="3"
+      className="bi bi-trash-fill inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
+      viewBox="0 0 16 16"
+      {...props}
+    >
+      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
+    </svg>)
+  }
+
   return (
     <div className='flex flex-wrap space-y-2 bg-slate-600 border-slate-700 rounded-md p-4'>
       <h1 className="w-full space-x-2 ml-2">
         <span className="text-white">{consumpState.name}</span>
         {editButton({
-          onClick: () => {
-            setDisplayEditModal(true)
-          }
+          onClick: () => { setDisplayEditModal(true) }
         })}
+        {deleteButton({
+          onClick: () => { setConfirmDeleteModel(true) }
+        })
+        }
       </h1>
       {consumpState.expenses.map((ex) => {
         const user = members.find((m) => m.id === ex.userId)
@@ -104,6 +132,32 @@ const ConsumptionCard = ({ consumption, members }: {
             if (message) setEditModalMsg(message)
           }} />
       }
+
+      {confirmDeleteModel &&
+        <ConfirmModal
+          text="Are you sure you want to delete this consumption?"
+          loading={loading}
+          handleOk={async () => {
+            try{
+              setLoading(true)
+              const { id, journeyId } =consumption
+              const deletedConsumption = await axios
+              .delete(`/api/v1/consumption/${id}?journeyId=${journeyId}`)
+              console.log('deleted: ', deletedConsumption)
+            } catch(e) {
+              console.log(e)
+            } finally { 
+              setLoading(false) 
+              setConfirmDeleteModel(false)
+              router.refresh()
+            }
+          }} 
+          handleCancel={() => {
+            setConfirmDeleteModel(false)
+          }}
+        />
+      }
+
     </div>
 
   )

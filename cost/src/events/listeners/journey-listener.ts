@@ -4,7 +4,7 @@ import { JourneyEvent, Listener, Topics } from "../../common";
 import { createJourney, modifyJourney } from "../../prisma-client";
 
 export class JourneyListener extends Listener<JourneyEvent> {
-  topic = Topics.J
+  topic = Topics.J as const
   onMessage = async ({ value, offset, commit } : {
     value: JourneyEvent["value"]
     offset: string

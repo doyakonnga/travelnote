@@ -4,6 +4,7 @@ import axios from "axios"
 import Image from "next/image"
 import { useState } from "react"
 import Alert from './alert'
+import ConfirmModal from "./ConfirmModal"
 
 interface Props {
   journeyId: string
@@ -139,6 +140,7 @@ const JourneyCard = (props: Props) => {
         <p className="leading-relaxed text-base">{subtitle}</p>
 
         {/* adding user */}
+        {/* search bar */}
         {(option === 1) &&
           <div className="w-full">
             <div className="pt-2 text-gray-600 w-fit relative">
@@ -200,26 +202,11 @@ const JourneyCard = (props: Props) => {
             </button>
           </div>
         }
+
         {confirmModal &&
-          <div className="fixed inset-0 m-0 z-20 bg-black bg-opacity-25 backdrop-blur-sm flex justify-center items-center">
-            <div className="z-30 bg-white p-4 rounded flex-col justify-center items-center w-80">
-              <h1>{confirmModal}</h1>
-              { loading? (<h1>Loading...</h1>) :
-                <div className="flex justify-between">
-                <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200"
-                  onClick={handleConfirm}
-                >
-                  OK
-                </button>
-                <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
-                  onClick={() => { setConfirmModal('') }}
-                >
-                  Cancel
-                </button>
-              </div>}
-            </div>
-          </div>
+          <ConfirmModal text={confirmModal} loading={loading} handleOk={handleConfirm} handleCancel={() => { setConfirmModal('') }}/> 
         }
+        
       </div>
       {(reqState.result === 'success') &&
         <Alert color="green" id=''>{reqState.message}</Alert>}

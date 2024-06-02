@@ -1,7 +1,10 @@
 import express, { NextFunction, Request, Response } from 'express'
-import { body, validationResult } from 'express-validator'
+import { body, param, validationResult } from 'express-validator'
 import '../middlewares/req-user'
-import { createConsumption, areUsersInJourney, journeyConsumptions, updateConsumption } from '../prisma-client'
+import { createConsumption, areUsersInJourney, journeyConsumptions, updateConsumption, deleteConsumptionById } from '../prisma-client'
+import connectRedpanda from '../redpanda'
+import { ConsumptionPublisher } from '../events/publishers/consumption-publisher'
+import { validation } from '../middlewares/validation-result'
 
 export const consumptionRouter = express.Router()
 
@@ -12,13 +15,26 @@ consumptionRouter.get('/', async (req, res) => {
   res.status(200).json({ consumptions })
 })
 
+consumptionRouter.delete('/:id',
+  param("id").isString(),
+  validation,
+  async (req, res) => {
+    const consumption = await deleteConsumptionById(req.params!.id)
+
+    const [producer,] = await connectRedpanda
+    await (new ConsumptionPublisher(producer))
+      .send(consumption.id, { action: 'deleted', consumption })
+
+    return res.status(200).json({ consumption })
+  }
+)
 
 consumptionRouter.use(
   body('journeyId').isString(),
   body('name').isString(),
   body('isForeign').default(false).isBoolean(),
   body('rate').default(0).isNumeric(),
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     body('payingUserId').default(req.user?.id).isString()(req, res, next)
   },
   body('expenses').custom(expenses => {
@@ -33,10 +49,6 @@ consumptionRouter.use(
     })
     return true
   }),
-  async (req, res, next) => {
-    
-    return next()
-  },
   // validate if each user is in the journey group
   async (req, res, next) => {
     if (!(await areUsersInJourney(
@@ -48,22 +60,29 @@ consumptionRouter.use(
 )
 
 
-consumptionRouter.post('/', async (req: Request, res: Response) => {
-  if (!validationResult(req).isEmpty()) {
-    console.log(validationResult(req))
-    throw 'express-validator errors'
-  }
-  const consumption = await createConsumption(req.body)
-  res.status(200).json({ consumption })
-})
+consumptionRouter.post('/',
+  validation,
+  async (req: Request, res: Response) => {
+    const consumption = await createConsumption(req.body)
 
-consumptionRouter.put('/', 
-body("id").isString(),
-async (req, res) => {
-  if (!validationResult(req).isEmpty()) {
-    console.log(validationResult(req))
-    throw 'express-validator errors'
+    const [producer,] = await connectRedpanda
+    await (new ConsumptionPublisher(producer))
+      .send(consumption.id, { action: 'created', consumption })
+
+    res.status(200).json({ consumption })
   }
-  const consumption = await updateConsumption(req.body)
-  res.status(200).json({ consumption })
-})
+)
+
+consumptionRouter.put('/',
+  body("id").isString(),
+  validation,
+  async (req, res) => {
+    const consumption = await updateConsumption(req.body)
+
+    const [producer,] = await connectRedpanda
+    await (new ConsumptionPublisher(producer))
+      .send(consumption.id, { action: 'modified', consumption })
+
+    res.status(200).json({ consumption })
+  })
+

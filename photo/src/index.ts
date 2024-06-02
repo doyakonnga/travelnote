@@ -5,6 +5,7 @@ import connectRedpanda from './redpanda'
 import { JourneyListener } from './events/listeners.ts/journey-listener'
 import { reqUser } from './middlewares/req-user'
 import { errorHandler } from './middlewares/error-handler'
+import { ConsumptionListener } from './events/listeners.ts/consumption-listener'
 
 const app = express()
 
@@ -28,7 +29,7 @@ const start = async () => {
     const [producer, consumer] = await connectRedpanda
     console.log('connected to redpanda')
     await new JourneyListener(consumer).listen()
-    await 
+    await new ConsumptionListener(consumer).listen()
     process.on('SIGINT', () => {
       producer.disconnect()
       consumer.disconnect()
