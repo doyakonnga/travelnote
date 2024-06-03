@@ -2,9 +2,11 @@
 
 import axios from "axios"
 import { useState, useRef } from "react"
-import { useFormState } from "react-dom"
+import { useFormState, useFormStatus } from "react-dom"
 import Alert from "./alert"
 import { usePathname, useRouter } from "next/navigation"
+import Spinner from "./spinner"
+import { randomBytes } from "crypto"
 
 interface ExpenAttr {
   userId: string
@@ -12,6 +14,23 @@ interface ExpenAttr {
 }
 interface FormState {
   message: string
+}
+
+
+const ButtonBar = ({ onClear }: { onClear: () => void }) => {
+  const { pending } = useFormStatus()
+  return pending ? <Spinner /> : (
+    <div className="flex justify-between">
+      <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
+        onClick={() => onClear}
+      >
+        Clear
+      </button>
+      <button className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200">
+        Submit
+      </button>
+    </div>
+  )
 }
 
 
@@ -25,21 +44,21 @@ const CreateConsumptionForm = ({ journeyId, users }: {
     total: 0,
     ...users.reduce((acc, cur) => { return { ...acc, [cur.id]: 0 } }, {})
   })
-
   const handleSubmit = async (
     prevState: FormState,
     formData: FormData
   ) => {
+    let total = 0
     const expenses = users.map((u) => {
-      return {
-        userId: u.id,
-        amount: Number(formData.get(u.id))
-      }
+      const amount = Number(formData.get(u.id))
+      total += amount
+      return { userId: u.id, amount }
     })
     const name = formData.get('item')
     const isForeign = formData.get('isForeign') ? true : false
     const rate = Number(formData.get('rate'))
     try {
+      if (!total) throw new Error('No valid input amount')
       await axios.post("/api/v1/consumption", {
         journeyId,
         name,
@@ -47,22 +66,31 @@ const CreateConsumptionForm = ({ journeyId, users }: {
         isForeign,
         expenses
       })
-      // if (!document.getElementById("form")) 
-      //   throw new Error('form not exist');
-      // (document.getElementById("form") as HTMLFormElement).reset()
       ref.current?.reset()
+      setAmounts((prev) => {
+        Object.keys(prev).forEach((key) => prev[key] = 0)
+        return { ...prev }
+      })
       router.refresh()
       return {
-        message: 'success'
+        result: 'success',
+        id: randomBytes(4).toString(),
+        message: 'created successfully'
       }
     } catch (e) {
       console.log(e)
+      let message = (e instanceof Error)?
+        e.message: 'Operation failed, try again later.'
       return {
-        message: 'failure'
+        result: 'failure',
+        id: randomBytes(4).toString(),
+        message
       }
     }
   }
   const [formState, formAction] = useFormState(handleSubmit, {
+    result: '',
+    id: '',
     message: ''
   })
 
@@ -85,8 +113,9 @@ const CreateConsumptionForm = ({ journeyId, users }: {
       </div>
 
       <div className="flex items-center border-b-4 border-gray-400 pb-4">
+        {/* total */}
         <label htmlFor="total" className="block shrink-0 w-4/12 flex items-center">Total</label>
-        <input type="number" id="total" name="total"
+        <input type="text" id="total" name="total"
           className="mt-1 p-1 w-40 border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
           value={amounts.total || ''}
           // when changing total value, zero every individual value
@@ -102,6 +131,7 @@ const CreateConsumptionForm = ({ journeyId, users }: {
             })
           }}
         />
+        {/* split button */}
         <button type="button" className="m-auto w-3/12 max-w-40 flex justify-center bg-gray-400 text-stone-800 p-1 rounded tracking-wide"
           onClick={() => {
             setAmounts((prev) => {
@@ -122,7 +152,7 @@ const CreateConsumptionForm = ({ journeyId, users }: {
             <img className="flex-shrink-0 object-cover mx-1 rounded-full w-9 h-9" src={u.avatar || '/user.png'} alt="user avatar" />
             {u.name}
           </label>
-          <input type="number" step="any" id={u.id} name={u.id}
+          <input type="text" step="any" id={u.id} name={u.id}
             className="mt-1 p-1 w-40 border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
             value={amounts[u.id] || ''}
             onChange={(e) => {
@@ -141,22 +171,18 @@ const CreateConsumptionForm = ({ journeyId, users }: {
           />
         </div>
       ))}
-      <div className="flex justify-between">
-        <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
-          onClick={() => setAmounts((prev) => {
-            Object.keys(prev).forEach((key) => { prev[key] = 0 })
-            return { ...prev }
-          })}
-        >
-          Clear
-        </button>
-        <button className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200">
-          Submit
-        </button>
-      </div>
 
-      {formState.message === 'success' && <Alert color={"green"} id={''}> Adding success! </Alert>}
-      {formState.message === 'failure' && <Alert color={"red"} id={''}> Adding failure! </Alert>}
+      <ButtonBar onClear={() =>
+        setAmounts((prev) => {
+          Object.keys(prev).forEach((key) => { prev[key] = 0 })
+          return { ...prev }
+        })}
+      />
+
+      {formState.result === 'success' &&
+        <Alert color={"green"} id={formState.id}>{formState.message}</Alert>}
+      {formState.result === 'failure' &&
+        <Alert color={"red"} id={formState.id}>{formState.message}</Alert>}
     </form>
   )
 }

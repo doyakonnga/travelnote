@@ -1,4 +1,5 @@
 'use client'
+import { useSearchParams } from "next/navigation";
 import { Dispatch, SetStateAction, useState, useRef, MutableRefObject, useEffect } from "react";
 
 const Alert = ({ color, children, id }: {
@@ -25,8 +26,8 @@ const Alert = ({ color, children, id }: {
   const [title, context] = children.split('; ')
 
   return (
-    <div className={"shadow-md p-1 flex flex-row rounded-lg m-1 bg-white " + (!show? 'hidden' : '')}
-      // id={id}
+    <div className={"shadow-md p-1 flex flex-row rounded-lg m-1 bg-white " + (!show ? 'hidden' : '')}
+    // id={id}
     >
       <div className={promptClass} />
       <b className='px-1'>{title}</b>
@@ -51,6 +52,15 @@ const Alert = ({ color, children, id }: {
       </span>
     </div>
   )
+}
+
+export const UrlAlert = () => {
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
+  const children = searchParams.get('message')
+  return (id && children) ?
+    <Alert id={id} color="green">{children}</Alert>
+    : <></>
 }
 
 export default Alert

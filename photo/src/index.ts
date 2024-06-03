@@ -6,6 +6,8 @@ import { JourneyListener } from './events/listeners.ts/journey-listener'
 import { reqUser } from './middlewares/req-user'
 import { errorHandler } from './middlewares/error-handler'
 import { ConsumptionListener } from './events/listeners.ts/consumption-listener'
+import { albumRouter } from './routes/album-router'
+import { photoRouter } from './routes/photo-router'
 
 const app = express()
 
@@ -18,8 +20,8 @@ app.use(
   reqUser,
 )
 
-app.use(`${v}/album`, )
-app.use(`${v}/photo`, )
+app.use(`${v}/album`, albumRouter)
+app.use(`${v}/photo`, photoRouter)
 app.all('*', (req, res) => { throw '404' })
 
 app.use(errorHandler)

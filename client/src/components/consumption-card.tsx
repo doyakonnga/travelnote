@@ -7,28 +7,34 @@ import EditConsumptionModal from '@/components/edit-consumption-modal'
 import Alert from "./alert"
 import ConfirmModal from "./ConfirmModal"
 import { useRouter } from "next/navigation"
+import { randomBytes } from "crypto"
+import Spinner from "./spinner"
+
+type ReqState = null | 'loading' | {
+  result: 'success' | 'failure'
+  id: string
+  message: string
+}
 
 const ConsumptionCard = ({ consumption, members }: {
   consumption: Consumption
   members: Member[]
 }) => {
-  const router= useRouter()
+  const router = useRouter()
+  // update expenses
   const [consumpState, setConsumpState] = useState(consumption)
   const [editedEx, setEditedEx] = useState('')
-
+  // update consumption
   const [displayEditModal, setDisplayEditModal] = useState(false)
-  const [editModalId, setEditModalId] = useState('')
-  const [editModalMsg, setEditModalMsg] = useState('')
-
+  // delete consumption
   const [confirmDeleteModel, setConfirmDeleteModel] = useState(false)
-
-  const [loading, setLoading] = useState(false)
-
+  // request states
+  const [reqState, setReqState] = useState<ReqState>(null)
 
   const handleIsPaidChange = async (ex: Expense) => {
     setEditedEx('')
     try {
-      setLoading(true)
+      setReqState('loading')
       await axios.patch(`/api/v1/expense/${ex.id}`, { isPaid: !ex.isPaid })
       setConsumpState((prev => {
         const exs = prev.expenses.map((e) => {
@@ -38,8 +44,19 @@ const ConsumptionCard = ({ consumption, members }: {
         })
         return { ...prev, expenses: exs }
       }))
-    } catch (e) { console.log(e) 
-    } finally { setLoading(false) }
+      setReqState({
+        result: 'success',
+        id: randomBytes(4).toString(),
+        message: 'The expense was updated successfully.'
+      })
+    } catch (e) {
+      console.log(e)
+      setReqState({
+        result: 'failure',
+        id: randomBytes(4).toString(),
+        message: 'Operation failed, Please try again later.'
+      })
+    }
   }
 
   const editButton = (props: {}) => (<svg
@@ -59,7 +76,7 @@ const ConsumptionCard = ({ consumption, members }: {
     />
   </svg>)
 
-  const deleteButton = ( props:{} ) => {
+  const deleteButton = (props: {}) => {
     return (<svg
       xmlns="http://www.w3.org/2000/svg"
       width={16}
@@ -86,39 +103,48 @@ const ConsumptionCard = ({ consumption, members }: {
         })
         }
       </h1>
-      {consumpState.expenses.map((ex) => {
-        const user = members.find((m) => m.id === ex.userId)
-        return (
-          // each expense
-          <div key={ex.id} className={"w-8/12 min-w-64 flex rounded-md ml-auto mr-2 p-1 space-x-1 " + (ex.isPaid ? 'bg-teal-400' : 'bg-rose-400')}>
-            {/* edit button */}
-            {(consumpState.payingUserId !== ex.userId) &&
-              editButton({
-                onClick: () => {
-                  setEditedEx((prev) => (prev === ex.id) ? '' : ex.id)
-                }
-              })
-            }
-            {/* checkbox for isPaid */}
-            {(editedEx === ex.id) &&
-              <div className="inline-block ml-2 mr-auto">
-                <input type="checkbox" id="isPaid" value="true" checked={ex.isPaid} onChange={() => handleIsPaidChange(ex)} />
-                <label htmlFor="isPaid"> is paid</label>
+      {(reqState === 'loading') ? <Spinner /> :
+        consumpState.expenses.map((ex) => {
+          const user = members.find((m) => m.id === ex.userId)
+          return (
+            // each expense
+            <div key={ex.id} className={"w-8/12 min-w-64 flex rounded-md ml-auto mr-2 p-1 space-x-1 " + (ex.isPaid ? 'bg-teal-400' : 'bg-rose-400')}>
+              {/* edit button */}
+              {(consumpState.payingUserId !== ex.userId) &&
+                editButton({
+                  onClick: () => {
+                    setEditedEx((prev) => (prev === ex.id) ? '' : ex.id)
+                  }
+                })
+              }
+              {/* checkbox for isPaid */}
+              {(editedEx === ex.id) &&
+                <div className="inline-block ml-2 mr-auto">
+                  <input type="checkbox" id="isPaid" value="true" checked={ex.isPaid} onChange={() => handleIsPaidChange(ex)} />
+                  <label htmlFor="isPaid"> is paid</label>
+                </div>
+              }
+              <div className="shrink-0 w-3/12 min-w-32 ml-auto space-x-1">
+                <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={user?.avatar || '/user.png'} alt="user avatar" />
+                <span>{(user?.name || "user")}</span>
               </div>
-            }
-            <div className="shrink-0 w-3/12 min-w-32 ml-auto space-x-1">
-              <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={user?.avatar || '/user.png'} alt="user avatar" />
-              <span>{(user?.name || "user")}</span>
+              <div className="shrink-0 w-2/12 text-end pr-2 flex items-center justify-end">
+                {ex.amount}
+              </div>
             </div>
-            <div className="shrink-0 w-2/12 text-end pr-2 flex items-center justify-end">
-              {ex.amount}
-            </div>
-          </div>
-        )
-      })}
+          )
+        })}
 
-      {editModalMsg &&
+      {/* {editModalMsg &&
         <Alert color="green" id={editModalId}>{editModalMsg}</Alert>
+      } */}
+
+      {(reqState !== 'loading') &&
+        (reqState?.result === 'success' ?
+          <Alert color={"green"} id={reqState.id}>{reqState.message}</Alert>
+          : reqState?.result === 'failure' ?
+            <Alert color={"red"} id={reqState.id}>{reqState.message}</Alert>
+            : <></>)
       }
 
       {displayEditModal &&
@@ -128,35 +154,48 @@ const ConsumptionCard = ({ consumption, members }: {
           users={members}
           handleClose={(id?: string, message?: string) => {
             setDisplayEditModal(false)
-            if (id) setEditModalId(id)
-            if (message) setEditModalMsg(message)
+            if (id && message)
+              setReqState({ result: 'success', id, message })
           }} />
       }
 
       {confirmDeleteModel &&
         <ConfirmModal
           text="Are you sure you want to delete this consumption?"
-          loading={loading}
+          loading={reqState === 'loading'}
           handleOk={async () => {
-            try{
-              setLoading(true)
-              const { id, journeyId } =consumption
+            try {
+              setReqState('loading')
+              const { id, journeyId } = consumption
               const deletedConsumption = await axios
-              .delete(`/api/v1/consumption/${id}?journeyId=${journeyId}`)
+                .delete(`/api/v1/consumption/${id}?journeyId=${journeyId}`)
               console.log('deleted: ', deletedConsumption)
-            } catch(e) {
+              const randomId = randomBytes(4).toString('ascii')
+              const message = 'The consumption has been deleted.'
+              setReqState({
+                result: 'success', id: randomId, message 
+              })
+              router.replace(
+                `/journey/${consumption.journeyId}/consumption?id=${randomId}&message=${message}`
+              )
+            } catch (e) {
               console.log(e)
-            } finally { 
-              setLoading(false) 
-              setConfirmDeleteModel(false)
+              setReqState({
+                result: 'failure',
+                id: randomBytes(4).toString(),
+                message: 'Operation failed, Please try again later.'
+              })
               router.refresh()
+            } finally {
+              setConfirmDeleteModel(false)
             }
-          }} 
+          }}
           handleCancel={() => {
             setConfirmDeleteModel(false)
           }}
         />
       }
+
 
     </div>
 

@@ -33,7 +33,13 @@ consumptionRouter.use(
   body('journeyId').isString(),
   body('name').isString(),
   body('isForeign').default(false).isBoolean(),
-  body('rate').default(0).isNumeric(),
+  // rate of 0 will be saved as null in DB
+  body('rate').default(0).custom((rate) => {
+    if (typeof rate !== 'number' || rate < 0) 
+      throw new Error('rate has to be positive number')
+    return true
+  }),
+  // default current user is paying user
   (req, res, next) => {
     body('payingUserId').default(req.user?.id).isString()(req, res, next)
   },
@@ -41,11 +47,10 @@ consumptionRouter.use(
     expenses.forEach((e: { userId: string, amount: number }) => {
       if (typeof e.userId !== 'string')
         throw new Error('userId has to be string')
-      if (typeof e.amount !== 'number')
-        throw new Error('amount has to be number')
-      return 0
+      if (typeof e.amount !== 'number' || e.amount < 0)
+        throw new Error('amount has to be positive number')
       // error thrown here will be caught by express-validator
-      // and appear in validationResult(req).array().[{msg}]
+      // and e.message will appear in validationResult(req).array().[{msg}]
     })
     return true
   }),

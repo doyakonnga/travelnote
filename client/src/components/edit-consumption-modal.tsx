@@ -1,16 +1,33 @@
 'use client'
 
 import axios from "axios"
-import { useFormState } from "react-dom"
+import { useFormState, useFormStatus } from "react-dom"
 import Alert from "./alert"
 import { Dispatch, SetStateAction, useState } from "react"
 import { randomBytes } from "crypto"
 import { refresh } from "./actions"
+import Spinner from "./spinner"
 
 
 interface FormState {
   id: string
   message: string
+}
+
+const ButtonBar = ({ handleClose }: { handleClose: ()=> void }) => {
+  const { pending } = useFormStatus()
+  return pending? <Spinner/>: (
+    <div className="flex justify-between">
+      <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
+        onClick={() => { handleClose() }}
+      >
+        Cancel
+      </button>
+      <button className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200">
+        Save
+      </button>
+    </div>
+  )
 }
 
 const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose }: {
@@ -19,14 +36,6 @@ const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose
   users: Member[];
   handleClose: (id?: string, message?: string) => void
 }) => {
-
-  // const [amounts, setAmounts] = useState<{ [key: string]: number }>(
-  //   users.reduce((acc, cur) => { return { 
-  //     ...acc, 
-  //     [cur.id]: consumption.expenses.find((ex) => ex.userId === cur.id)?.amount || 0
-  //   } }, {})
-  // )
-
   const handleSave = async (
     prevState: FormState,
     formData: FormData
@@ -100,16 +109,8 @@ const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose
               />
             </div>
           ))}
-          <div className="flex justify-between">
-            <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
-              onClick={() => { handleClose() }}
-            >
-              Cancel
-            </button>
-            <button className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200">
-              Save
-            </button>
-          </div>
+          
+          <ButtonBar handleClose={handleClose}/>
 
           {formState.message === 'failure' && <Alert color={"red"} id={formState.id}> Adding failure! </Alert>}
 

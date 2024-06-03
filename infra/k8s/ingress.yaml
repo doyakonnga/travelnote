@@ -24,6 +24,13 @@ spec:
             name: cost-svc
             port:
               number: 3000
+      - path: /api/v1/(album|photo)/?(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: photo-svc
+            port:
+              number: 3000
       - path: /?(.*)
         pathType: ImplementationSpecific
         backend:

@@ -2,6 +2,7 @@ import ConsumptionCard from "@/components/consumption-card"
 import axios from "axios"
 import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
+import { UrlAlert } from '@/components/alert'
 
 
 
@@ -50,6 +51,7 @@ const ConsumptionPage = async ({ params }: {
   })
   return (
     <div className='mt-4'>
+      <UrlAlert/>
       {consumpsAndDates.map((c) => {
         if (typeof c === 'string') return <h1 key={c} className="m-2">{c}</h1>
         return (

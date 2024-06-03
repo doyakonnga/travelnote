@@ -88,12 +88,14 @@ export async function createConsumption(attrs: ConsAttr) {
       payingUserId: attrs.payingUserId,
       expenses: {
         createMany: {
-          data: attrs.expenses.map((expense) => {
-            return {
-              ...expense,
-              isPaid: expense.userId === attrs.payingUserId
-            }
-          })
+          data: attrs.expenses
+            .filter((expense) => expense.amount > 0)
+            .map((expense) => {
+              return {
+                ...expense,
+                isPaid: expense.userId === attrs.payingUserId
+              }
+            })
         }
       }
     },
@@ -125,7 +127,7 @@ export async function updateConsumption(attrs: ConsAttr & { id: string }) {
 }
 
 export async function deleteConsumptionById(id: string) {
-  return await prisma.consumption.delete({ where: { id }})
+  return await prisma.consumption.delete({ where: { id } })
 }
 
 export interface ExpenseQuery {
