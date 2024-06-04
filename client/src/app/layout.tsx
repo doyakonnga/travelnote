@@ -55,7 +55,19 @@ declare global {
     createdAt: string
     expenses: Expense[]
   }
+
+  type Photo = {
+    id: string;
+    url: string;
+    description: string | null;
+    userId: string;
+    createdAt: Date;
+    albumId: string;
+    consumptionId: string | null;
+  }
 }
+
+
 
 export default async function RootLayout({
   children,

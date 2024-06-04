@@ -21,5 +21,4 @@ class Redpanda {
   }
 }
 
-
 export default (new Redpanda).connect('photo')

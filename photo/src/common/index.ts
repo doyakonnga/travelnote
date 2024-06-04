@@ -11,6 +11,13 @@ export abstract class Listener<E extends Event> {
   }): void
   constructor(protected consumer: Consumer) { }
 
+  async subscribe() {
+    await this.consumer.subscribe({
+      topic: this.topic,
+      fromBeginning: true
+    })
+  }
+
   async listen() {
     await this.consumer.subscribe({
       topic: this.topic,

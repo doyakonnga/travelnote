@@ -1,13 +1,12 @@
 import express from 'express'
 import 'express-async-errors'
 import cookieSession from 'cookie-session'
-import connectRedpanda from './redpanda'
-import { JourneyListener } from './events/listeners.ts/journey-listener'
 import { reqUser } from './middlewares/req-user'
 import { errorHandler } from './middlewares/error-handler'
-import { ConsumptionListener } from './events/listeners.ts/consumption-listener'
 import { albumRouter } from './routes/album-router'
 import { photoRouter } from './routes/photo-router'
+import connectRedpanda from './redpanda'
+import { JourneyListener, ConsumptionListener, redpandaListen } from './events/listeners'
 
 const app = express()
 
@@ -30,8 +29,13 @@ const start = async () => {
   try {
     const [producer, consumer] = await connectRedpanda
     console.log('connected to redpanda')
-    await new JourneyListener(consumer).listen()
-    await new ConsumptionListener(consumer).listen()
+    
+    await redpandaListen(
+      consumer, 
+      JourneyListener, 
+      ConsumptionListener
+    )
+
     process.on('SIGINT', () => {
       producer.disconnect()
       consumer.disconnect()

@@ -50,9 +50,8 @@ const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose
     const isForeign = formData.get('isForeign') ? true : false
     const rate = Number(formData.get('rate'))
     try {
-      const { data } = await axios.put("/api/v1/consumption", {
+      const { data } = await axios.put(`/api/v1/consumption/${consumption.id}`, {
         journeyId: consumption.journeyId,
-        id: consumption.id,
         name,
         isForeign,
         rate,

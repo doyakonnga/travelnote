@@ -1,6 +1,7 @@
 import express from 'express'
-import { albumPhotoById, consumptionPhotoById, createPhoto, deletePhotoById } from '../prisma-client'
-import { body } from 'express-validator'
+import { albumPhotoById, consumptionPhotoById, createPhoto, deletePhotoById, journeyPhotoById } from '../prisma-client'
+import { body, param } from 'express-validator'
+import { validation } from '../middlewares/validation-result'
 
 export const photoRouter = express.Router()
 
@@ -10,7 +11,9 @@ photoRouter.get("/", async (req, res) => {
       await consumptionPhotoById(req.query.consumptionId)
       : (typeof req.query.albumId === 'string') ?
         await albumPhotoById(req.query.albumId)
-        : null
+        : (typeof req.query.journeyId === 'string') ?
+          await journeyPhotoById(req.query.journeyId)
+          : null
   if (!photos) throw 'scope not specified'
   return res.status(200).json({ photos })
 })
@@ -19,13 +22,16 @@ photoRouter.get("/", async (req, res) => {
 photoRouter.post('/',
   body('url').isString(),
   body('description').default('').isString(),
-  body('userId').isString(),
+  (req, res, next) => {
+    body('userId').default(req.user?.id).isString()(req, res, next)
+  },
   body('albumId').isString(),
   body('consumptionId').default('').isString(),
+  validation,
   async (req, res) => {
     const data: {
       url: string
-      description: string
+      description: string | null
       userId: string
       albumId: string
       consumptionId: string
@@ -41,11 +47,10 @@ photoRouter.post('/',
   }
 )
 
-photoRouter.delete('/',
-  body('id').isString(),
+photoRouter.delete('/:id',
+  param('id').isString(),
   async (req, res) => {
-    await deletePhotoById(req.body.id)
+    await deletePhotoById(req.params!.id)
     return res.status(200).json({ })
-
   }
 )

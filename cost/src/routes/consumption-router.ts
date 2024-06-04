@@ -78,11 +78,14 @@ consumptionRouter.post('/',
   }
 )
 
-consumptionRouter.put('/',
-  body("id").isString(),
+consumptionRouter.put('/:id',
+  param("id").isString(),
   validation,
   async (req, res) => {
-    const consumption = await updateConsumption(req.body)
+    const consumption = await updateConsumption({
+      id: req.params.id,
+      ...req.body
+    })
 
     const [producer,] = await connectRedpanda
     await (new ConsumptionPublisher(producer))
