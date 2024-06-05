@@ -5,8 +5,8 @@ import { reqUser } from './middlewares/req-user'
 import { errorHandler } from './middlewares/error-handler'
 import { albumRouter } from './routes/album-router'
 import { photoRouter } from './routes/photo-router'
-import connectRedpanda from './redpanda'
-import { JourneyListener, ConsumptionListener, redpandaListen } from './events/listeners'
+import { redpandaConnect, kafkaListen } from './common'
+import { JourneyListener, ConsumptionListener } from './events/listeners'
 
 const app = express()
 
@@ -27,10 +27,10 @@ app.use(errorHandler)
 
 const start = async () => {
   try {
-    const [producer, consumer] = await connectRedpanda
+    const [producer, consumer] = await redpandaConnect('photo')
     console.log('connected to redpanda')
     
-    await redpandaListen(
+    await kafkaListen(
       consumer, 
       JourneyListener, 
       ConsumptionListener

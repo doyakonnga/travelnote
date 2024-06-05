@@ -1,5 +1,5 @@
 import { Consumer, EachMessagePayload, Producer } from "kafkajs"
-import { Topics, Event } from "./events"
+import { Topics, Event, JourneyEvent } from "./events"
 
 
 export abstract class Listener<E extends Event> {
@@ -10,34 +10,10 @@ export abstract class Listener<E extends Event> {
     commit: () => Promise<void>
   }): void
   constructor(protected consumer: Consumer) { }
-
   async subscribe() {
     await this.consumer.subscribe({
       topic: this.topic,
       fromBeginning: true
-    })
-  }
-
-  async listen() {
-    await this.consumer.subscribe({
-      topic: this.topic,
-      fromBeginning: true
-    })
-    await this.consumer.run({
-      eachMessage: async (
-        { topic, partition, message }: EachMessagePayload) => {
-        // throw new Error('test');
-        const value: E["value"] = JSON.parse(message.value as any)
-        const { offset } = message
-        const commit = async () => {
-          await this.consumer.commitOffsets([{
-            topic,
-            partition,
-            offset: (Number(message.offset) + 1).toString()
-          }]);
-        }
-        await this.onMessage({ value, offset, commit })
-      }
     })
   }
 }
@@ -53,4 +29,39 @@ export abstract class Publisher<E extends Event> {
   }
 }
 
+type ExtendedListener = (new (c: Consumer) => Listener<Event>)
+// & { [K in keyof typeof Listener]: typeof Listener[K] }
+// https://stackoverflow.com/questions/67558444/typescript-type-of-subclasses-of-an-abstract-generic-class
+
+export async function kafkaListen(
+  consumer: Consumer,
+  ...Listeners: ExtendedListener[]) {
+  // subscribe
+  const listeners: (InstanceType<ExtendedListener>)[] = []
+  Listeners.forEach((L) => listeners.push(new L(consumer)))
+  for (const listener of listeners)
+    await listener.subscribe()
+  // run
+  await consumer.run({
+    eachMessage: async (
+      { topic, partition, message }: EachMessagePayload) => {
+      // throw new Error('test');
+      const listener = listeners.find((l) => topic === l['topic'])
+      if (listener) {
+        const value = JSON.parse(message.value as any)
+        const { offset } = message
+        const commit = async () => {
+          await consumer.commitOffsets([{
+            topic,
+            partition,
+            offset: (Number(message.offset) + 1).toString()
+          }]);
+        }
+        await listener.onMessage({ value, offset, commit })
+      }
+    }
+  })
+}
+
 export * from './events'
+export * from './redpanda'

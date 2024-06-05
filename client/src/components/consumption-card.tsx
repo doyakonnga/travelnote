@@ -9,6 +9,7 @@ import ConfirmModal from "./ConfirmModal"
 import { useRouter } from "next/navigation"
 import { randomBytes } from "crypto"
 import Spinner from "./spinner"
+import ConsumptionPhotoAccordion from "./consumption-photo-accordion"
 
 type ReqState = null | 'loading' | {
   result: 'success' | 'failure'
@@ -17,12 +18,12 @@ type ReqState = null | 'loading' | {
 }
 
 const ConsumptionCard = ({ consumption, members }: {
-  consumption: Consumption
+  consumption: Consumption & { photos: Photo[] }
   members: Member[]
 }) => {
   const router = useRouter()
   // update expenses
-  const [consumpState, setConsumpState] = useState(consumption)
+  const [consumpState, setConsumpState] = useState<Consumption>(consumption)
   const [editedEx, setEditedEx] = useState('')
   // update consumption
   const [displayEditModal, setDisplayEditModal] = useState(false)
@@ -146,6 +147,8 @@ const ConsumptionCard = ({ consumption, members }: {
             <Alert color={"red"} id={reqState.id}>{reqState.message}</Alert>
             : <></>)
       }
+
+      <ConsumptionPhotoAccordion consumption={consumption}/>
 
       {displayEditModal &&
         <EditConsumptionModal

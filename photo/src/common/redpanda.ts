@@ -21,4 +21,4 @@ class Redpanda {
   }
 }
 
-export default (new Redpanda).connect('photo')
+export const redpandaConnect = (new Redpanda).connect
