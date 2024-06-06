@@ -18,7 +18,7 @@ type ReqState = null | 'loading' | {
 }
 
 const ConsumptionCard = ({ consumption, members }: {
-  consumption: Consumption & { photos: Photo[] }
+  consumption: Consumption
   members: Member[]
 }) => {
   const router = useRouter()

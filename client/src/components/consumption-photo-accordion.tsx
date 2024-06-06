@@ -1,31 +1,52 @@
 'use client'
 
-import { ChangeEvent, useEffect, useState } from "react"
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 import { Add } from "@/components/svg"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import axios from "axios"
+import Spinner from "./spinner"
+import Alert from "./alert"
+import { randomBytes } from "crypto"
+import { Sha256 } from "@aws-crypto/sha256-browser"
+import { getUploadUrl } from "./actions"
 
+interface Album {
+  id: string; name: string
+}
 
-const AlbumSelector = () => {
-  const params = useParams()
+const AlbumSelector = ({ selectedAlbum, setSelectedAlbum }: {
+  selectedAlbum: Album | null
+  setSelectedAlbum: Dispatch<SetStateAction<Album | null>>
+}) => {
   const [expanded, setExpanded] = useState(false)
-  const [albums, setAlbums] = useState<{
-    id: string; name: string
-  }[]>([])
-  const [selectedAlbum, setSelectedAlbum] = useState<{
-    id: string; name: string
-  } | null>(null)
+  const albumMenu = useRef<HTMLDivElement>(null)
+  const togglebutton = useRef<HTMLButtonElement>(null)
+  const [albums, setAlbums] = useState<Album[]>([])
+  const params = useParams()
   useEffect(() => {
     const jId = params.journeyId as string
     axios.get(`/api/v1/album?journeyId=${jId}`)
       .then(({ data }) => { setAlbums(data.albums) })
+    const handleClickOurside = (e: MouseEvent) => {
+      if (albumMenu.current && togglebutton.current
+        && !e.composedPath().includes(albumMenu.current)
+        && !e.composedPath().includes(togglebutton.current)
+      )
+        setExpanded(false)
+    }
+    document.addEventListener("click", handleClickOurside)
+    return () => {
+      document.removeEventListener("click", handleClickOurside)
+    }
   }, [])
   return (
     <div className="relative inline-block text-left">
       <button
         id="dropdown-button"
+        type="button"
         className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500"
+        ref={togglebutton}
         onClick={() => setExpanded((p) => !p)}
       >
         {selectedAlbum?.name || "Select Item"}
@@ -44,7 +65,7 @@ const AlbumSelector = () => {
         </svg>
       </button>
       <div
-        id="dropdown-menu"
+        id="dropdown-menu" ref={albumMenu}
         className={"origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 "
           + (!expanded ? 'hidden' : '')}
       >
@@ -75,6 +96,7 @@ const AlbumSelector = () => {
             placeholder="Enter New Item"
           />
           <button
+            type="button"
             id="submit-button"
             className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
@@ -86,24 +108,90 @@ const AlbumSelector = () => {
   )
 }
 
+
 const ConsumptionPhotoAccordion = ({ consumption }: {
-  consumption: Consumption & { photos: Photo[] }
+  consumption: Consumption
 }) => {
   const [expanded, setExpanded] = useState(false)
+  const [reqState, setReqState] = useState<{
+    result: 'ok' | 'error'
+    id: string
+    msg: string
+  } | 'loading' | ''>('')
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [object, setObject] = useState<[File | null, string]>([null, ''])
   const [objectUrl, setObjectUrl] = useState('')
+  const [description, setDescription] = useState('')
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
+  useEffect(() => {
+    setReqState('loading')
+    axios.get(`/api/v1/photo/?consumptionId=${consumption.id}`)
+      .then(({ data }) => {
+        setPhotos(data.photos)
+        setReqState('')
+      })
+      .catch((e) => {
+        console.log(e)
+        setReqState({
+          result: 'error',
+          id: randomBytes(4).toString(),
+          msg: 'photo fetching failed'
+        })
+      })
+  }, [])
 
   const handleFileInputChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setObjectUrl(URL.createObjectURL(file))
-    } else {
-      return setObjectUrl('')
-    }
+    if (!file) { return setObject([null, '']) } 
+    return setObject([file, URL.createObjectURL(file)])
   }
   const handleFileCancel = () => {
-    if (objectUrl)
-      URL.revokeObjectURL(objectUrl)
-    setObjectUrl('')
+    if (object[1])
+      URL.revokeObjectURL(object[1])
+    setObject([null, ''])
+  }
+  const handleSubmit = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    try {
+      if (!selectedAlbum)
+        throw new Error('Please select an album.')
+      if (!object[0])
+        throw new Error('Please select a photos.')
+      setReqState('loading')
+      const { type, size } = object[0]
+      // photo to s3
+      const hash = new Sha256();
+      hash.update(await object[0].arrayBuffer());
+      const buf = await hash.digest()
+      const checkSum = Array.from(new Uint8Array(buf)).
+        map((b) => b.toString(16).padStart(2, '0')).join('')
+      const s3url = await getUploadUrl(type, size, checkSum)
+      if (typeof s3url !== 'string') throw Error(s3url.error)
+      await axios.put(s3url, object[0],
+        { headers: { "Content-Type": object[0].type } })
+      console.log(s3url.split('?')[0])
+      // photo data to backend
+      const { data } = await axios.post('/api/v1/photo', {
+        url: s3url.split('?')[0],
+        description,
+        albumId: selectedAlbum.id,
+        consumptionId: consumption.id
+      })
+      setPhotos((prev) => [...prev, data.photo])
+      setReqState({
+        result: 'ok',
+        id: randomBytes(4).toString(),
+        msg: 'The photo was successfully uploaded.'
+      })
+      setObject([null, ''])
+    } catch (e) {
+      setReqState({
+        result: 'error',
+        id: randomBytes(4).toString(),
+        msg: (e instanceof Error) ? e.message : 'Error'
+      })
+      console.log(e)
+    }
   }
 
   return (
@@ -117,7 +205,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
         // aria-expanded="true"
         // aria-controls="accordion-color-body-1"
         >
-          <span>{`Photo: ${consumption.photos.length}`}</span>
+          <span>{`Photo: ${photos.length}`}</span>
           <svg
             data-accordion-icon=""
             className="w-3 h-3 rotate-180 shrink-0"
@@ -136,12 +224,16 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
           </svg>
         </button>
       </h2>
+      {/* expanded body */}
       <div
         id="accordion-color-body-1"
         className={(!expanded ? "hidden " : " ") + "relative"}
       // aria-labelledby="accordion-color-heading-1"
       >
-        {!objectUrl &&
+        {(reqState === 'loading') &&
+          <Spinner />
+        }
+        {!object[0] && (reqState !== 'loading') &&
           <div>
             <div className="p-5 border border-b-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
               <p className="mb-2 text-gray-500 dark:text-gray-400">
@@ -169,14 +261,15 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
             </label>
           </div>}
 
-        {objectUrl && (
-          <div className='flex relative'>
+        {object[1] && (reqState !== 'loading') && (
+          <div className='flex flex-wrap justify-between relative'>
             <Image
-              src={objectUrl}
+              src={object[1]}
               alt='selected image'
               width={500}
               height={500}
             />
+            {/* absolute close button */}
             <button type="button" className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 absolute right-0 top-0"
               onClick={handleFileCancel}
             >
@@ -184,12 +277,32 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <AlbumSelector />
-          </div>
-        )
-
+            <form className="flex-col justify-end items-end space-2">
+              <AlbumSelector
+                selectedAlbum={selectedAlbum}
+                setSelectedAlbum={setSelectedAlbum}
+              />
+              <textarea name="description" id="description"
+                value={description}
+                onChange={(e) => { setDescription(e.target.value) }}
+              />
+              <button
+                type="submit"
+                className="my-5 w-full flex justify-center bg-gray-700 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 transition-colors duration-100"
+                onClick={handleSubmit}
+              >
+                Post
+              </button>
+            </form>
+          </div>)
         }
       </div>
+      {(typeof reqState !== 'string') &&
+        <Alert color={reqState.result === 'ok' ? "green" : "red"}
+          id={reqState.id}>
+          {reqState.msg}
+        </Alert>
+      }
     </div>
   )
 }

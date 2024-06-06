@@ -11,13 +11,13 @@ const ConsumptionPage = async ({ params }: {
 }) => {
 
   const Cookie = cookies().getAll().map((c) => `${c.name}=${c.value};`).join(' ')
-  let consumptions: (Consumption & {photos: Photo[]})[] = []
+  let consumptions: Consumption[] = []
   let journey: { members: Member[] }
   let photos: Photo[] = []
   let jId = params.journeyId
 
   try {
-    const [{ data }, { data: data2 }, { data: data3 }] = await Promise.all([
+    const [{ data }, { data: data2 }] = await Promise.all([
       axios.get(`${process.env.NGINX_HOST}/api/v1/consumption/?journeyId=${jId}`, {
         headers: { Host: "travelnote.com", Cookie }
       }),
@@ -26,23 +26,10 @@ const ConsumptionPage = async ({ params }: {
       }).catch((e) => { 
         console.log(e)
         return { data: { journey: { members: [] } } } 
-      }),
-      axios.get(`${process.env.NGINX_HOST}/api/v1/photo/?journeyId=${jId}`, {
-        headers: { Host: "travelnote.com", Cookie }
-      }).catch((e) => {
-        console.log(e)
-        return { data: { photos: [] } } 
       })
     ])
     consumptions = (data.consumptions)
-    consumptions.forEach((c) => { c.photos = [] })
     journey = data2.journey
-    photos = data3.photos
-    // append photos onto consumptions
-    photos.forEach((p) => {
-      if(p.consumptionId)
-        consumptions.find((c) => c.id === p.consumptionId)?.photos.push(p)
-    })
   } catch (e) {
     if (axios.isAxiosError(e) && e.response) {
       if (e.response.status === 404)
