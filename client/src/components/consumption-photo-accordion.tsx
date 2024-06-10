@@ -10,6 +10,7 @@ import Alert from "./alert"
 import { randomBytes } from "crypto"
 import { Sha256 } from "@aws-crypto/sha256-browser"
 import { getUploadUrl } from "./actions"
+import Carousel from "./carousel"
 
 interface Album {
   id: string; name: string
@@ -142,7 +143,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
 
   const handleFileInputChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) { return setObject([null, '']) } 
+    if (!file) { return setObject([null, '']) }
     return setObject([file, URL.createObjectURL(file)])
   }
   const handleFileCancel = () => {
@@ -201,9 +202,6 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
           type="button"
           className="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 dark:border-gray-700 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-gray-800 gap-3"
           onClick={() => setExpanded((p) => !p)}
-        // data-accordion-target="#accordion-color-body-1"
-        // aria-expanded="true"
-        // aria-controls="accordion-color-body-1"
         >
           <span>{`Photo: ${photos.length}`}</span>
           <svg
@@ -228,31 +226,13 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
       <div
         id="accordion-color-body-1"
         className={(!expanded ? "hidden " : " ") + "relative"}
-      // aria-labelledby="accordion-color-heading-1"
       >
         {(reqState === 'loading') &&
           <Spinner />
         }
         {!object[0] && (reqState !== 'loading') &&
           <div>
-            <div className="p-5 border border-b-0 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
-              <p className="mb-2 text-gray-500 dark:text-gray-400">
-                Flowbite is an open-source library of interactive components built on
-                top of Tailwind CSS including buttons, dropdowns, modals, navbars, and
-                more.
-              </p>
-              <p className="text-gray-500 dark:text-gray-400">
-                Check out this guide to learn how to{" "}
-                <a
-                  href="/docs/getting-started/introduction/"
-                  className="text-blue-600 dark:text-blue-500 hover:underline"
-                >
-                  get started
-                </a>{" "}
-                and start developing websites even faster with components on top of
-                Tailwind CSS.
-              </p>
-            </div>
+            <Carousel photos={photos} />
             <label className="absolute bottom-3 right-3 cursor-pointer">
               <Add props={{}} />
               <input type="file" className="hidden" name="picture"

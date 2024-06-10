@@ -4,7 +4,7 @@ import axios from "axios"
 import Image from "next/image"
 import { useState } from "react"
 import Alert from './alert'
-import ConfirmModal from "./ConfirmModal"
+import ConfirmModal from "./confirm-modal"
 
 interface Props {
   journeyId: string
@@ -56,13 +56,13 @@ const JourneyCard = (props: Props) => {
         setLoading(false)
       }
     } else if (option === 2) {
-      try{
+      try {
         await axios.patch('/api/v1/journey/edit', {
           id: journeyId,
           quitingMemberId: ''
         })
       } catch (e) { console.log(e) }
-    } 
+    }
   }
 
   return (
@@ -128,7 +128,7 @@ const JourneyCard = (props: Props) => {
             id="3"
             className="bi bi-trash-fill inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
             viewBox="0 0 16 16"
-            onClick={() => { 
+            onClick={() => {
               changeOption(3)
               setConfirmModal('Are you sure you want to quit the journey? Please note that if you are last user, all of data in this group will be lost permanently.')
             }}
@@ -150,8 +150,8 @@ const JourneyCard = (props: Props) => {
                 name="search"
                 placeholder="Email"
                 value={keyword}
-                onChange={(e) => { 
-                  setKeyword(e.target.value) 
+                onChange={(e) => {
+                  setKeyword(e.target.value)
                   setFoundUser(null)
                 }}
               />
@@ -204,9 +204,9 @@ const JourneyCard = (props: Props) => {
         }
 
         {confirmModal &&
-          <ConfirmModal text={confirmModal} loading={loading} handleOk={handleConfirm} handleCancel={() => { setConfirmModal('') }}/> 
+          <ConfirmModal text={confirmModal} loading={loading} handleOk={handleConfirm} handleCancel={() => { setConfirmModal('') }} />
         }
-        
+
       </div>
       {(reqState.result === 'success') &&
         <Alert color="green" id=''>{reqState.message}</Alert>}

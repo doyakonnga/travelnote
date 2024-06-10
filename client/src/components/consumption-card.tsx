@@ -5,7 +5,7 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import EditConsumptionModal from '@/components/edit-consumption-modal'
 import Alert from "./alert"
-import ConfirmModal from "./ConfirmModal"
+import ConfirmModal from "./confirm-modal"
 import { useRouter } from "next/navigation"
 import { randomBytes } from "crypto"
 import Spinner from "./spinner"
@@ -140,15 +140,15 @@ const ConsumptionCard = ({ consumption, members }: {
         <Alert color="green" id={editModalId}>{editModalMsg}</Alert>
       } */}
 
-      {(reqState !== 'loading') &&
-        (reqState?.result === 'success' ?
+      {(typeof reqState === 'object') && (reqState) &&
+        (reqState.result === 'success' ?
           <Alert color={"green"} id={reqState.id}>{reqState.message}</Alert>
-          : reqState?.result === 'failure' ?
+          : reqState.result === 'failure' ?
             <Alert color={"red"} id={reqState.id}>{reqState.message}</Alert>
             : <></>)
       }
 
-      <ConsumptionPhotoAccordion consumption={consumption}/>
+      <ConsumptionPhotoAccordion consumption={consumption} />
 
       {displayEditModal &&
         <EditConsumptionModal
@@ -176,7 +176,7 @@ const ConsumptionCard = ({ consumption, members }: {
               const randomId = randomBytes(4).toString('ascii')
               const message = 'The consumption has been deleted.'
               setReqState({
-                result: 'success', id: randomId, message 
+                result: 'success', id: randomId, message
               })
               router.replace(
                 `/journey/${consumption.journeyId}/consumption?id=${randomId}&message=${message}`
