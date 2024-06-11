@@ -40,7 +40,12 @@ export async function deleteConsumptionById(id: string) {
 
 export async function journeyAlbumById(id: string) {
   return await prisma.album.findMany({
-    where: { journeyId: id }
+    where: { journeyId: id },
+    include: {
+      photos: {
+        orderBy: { createdAt: 'desc' }
+      }
+    }
   })
 }
 
@@ -74,14 +79,14 @@ export async function moveAllphotos(props: {
   const album = await prisma.album.findFirst({
     where: {
       journey: {
-        albums: { 
-          some: { id: props.originId } 
+        albums: {
+          some: { id: props.originId }
         }
       },
       name: props.targetName
     }
-  }) 
-  if (!album) throw '404' 
+  })
+  if (!album) throw '404'
   return await prisma.photo.updateMany({
     where: {
       albumId: props.originId

@@ -31,7 +31,7 @@ const SelectionBar = () => {
         <li className="flex-1">
           <Link
             href={`${basePath}/balance`}
-            className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+            className={('balance' === curPath) ? current : option}
           >
             Balance
             {/* Notification number bubble */}
@@ -42,10 +42,10 @@ const SelectionBar = () => {
         </li>
         <li className="flex-1">
           <Link
-            href="#"
-            className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+            href={`${basePath}/albums`}
+            className={('albums' === curPath) ? current : option}
           >
-            Applications
+            Albums
           </Link>
         </li>
         <li className="flex-1">

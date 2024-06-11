@@ -1,51 +1,76 @@
 'use client'
 
 import Image from "next/image"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 import { useState } from "react"
-import { DiVim } from "react-icons/di"
 import { FaArrowCircleRight, FaArrowCircleLeft } from "react-icons/fa"
+import { BiPhotoAlbum } from "react-icons/bi";
 
 const Carousel = ({ photos }: { photos: Photo[] }) => {
   const l = photos.length
+  const jId = useParams().journeyId
   const [current, setCurrent] = useState(0)
-
+  console.log(photos, current, photos[current])
 
   return (
-    <div className="overflow-hidden relative">
-      <div className="flex items-center shrink-0 min-h-96 transition duration-400"
-        style={{ transform: `translateX(${current * -100}%)` }}
-      >
-        {photos.map((p) =>
-          <img
-            key={'img' + p.id} src={p.url}
-            alt={p.description || 'user uploaded picture'}
-          ></img>)}
-      </div>
-      <div className="absolute inset-0 p-5 flex justify-between items-center text-white text-3xl">
-        <button type='button'
-          onClick={() => { 
-            setCurrent((prev) => (prev - 1 + l) % l) 
-            console.log(current)
-          }}
+    <div>
+      <div className="overflow-hidden relative">
+        <div className="flex shrink-0 transition duration-400"
+          style={{ transform: `translateX(${current * -100}%)` }}
         >
-          <FaArrowCircleLeft />
-        </button>
-        <button type='button'
-          onClick={() => { 
-            setCurrent((prev) => (prev + 1) % l)
-            console.log(current)
-          }}
-        >
-          <FaArrowCircleRight />
-        </button>
+          {photos.map((p) =>
+            <div className="relative min-h-[32rem] min-w-full">
+              <Image
+                key={'img' + p.id} src={p.url}
+                alt={p.description || 'user uploaded picture'}
+                layout='fill'
+                objectFit='contain'
+              />
+            </div>)}
+        </div>
+        {/* left and right buttons */}
+        <div className="absolute left-5 inset-y-0 flex justify-between items-center text-white text-3xl">
+          <button type='button'
+            onClick={() => {
+              setCurrent((prev) => (prev - 1 + l) % l)
+              console.log(current)
+            }}
+          >
+            <FaArrowCircleLeft />
+          </button>
+        </div>
+        <div className="absolute right-5 inset-y-0 flex justify-between items-center text-white text-3xl">
+          <button type='button'
+            onClick={() => {
+              setCurrent((prev) => (prev + 1) % l)
+              console.log(current)
+            }}
+          >
+            <FaArrowCircleRight />
+          </button>
+        </div>
+        {/* dots */}
+        <div className="absolute bottom-4 w-full flex justify-center gap-4">
+          {photos.map((p, i) => <div
+            key={'dot' + p.id}
+            className={"rounded-full w-4 h-4 cursor-pointer " + (i === current ? "bg-white" : "bg-gray-400")}
+            onClick={() => setCurrent(i)}
+          ></div>)}
+        </div>
       </div>
-      <div className="absolute bottom-0 py-4 w-full flex justify-center gap-5">
-        {photos.map((p, i) => <div
-          key={'dot' + p.id}
-          className={"rounded-full w-5 h-5 " + (i === current? "bg-white": "bg-gray-400") }
-          onClick={() => setCurrent(i)}
-        ></div>)}
-      </div>
+      {photos[current] &&
+        <div className="flex-col items-center gap-2 m-4">
+          <div className="flex items-center justify-center">
+            <Link className="flex items-center gap-1 text-sky-300"
+              href={`/journey/${jId}/albums/${photos[current].albumId}`}>
+              <BiPhotoAlbum />
+              <p>{photos[current].album.name}</p>
+            </Link>
+          </div>
+          <p className="px-8 mx-8 text-gray-100"> {photos[current].description} </p>
+        </div>
+      }
     </div>
   )
 }

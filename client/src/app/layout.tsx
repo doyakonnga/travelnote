@@ -63,7 +63,14 @@ declare global {
     userId: string;
     createdAt: Date;
     albumId: string;
+    album: {name: string}
     consumptionId: string | null;
+  }
+
+  type Album = {
+    id: string;
+    name: string
+    photos: Photo[]
   }
 }
 

@@ -19,8 +19,8 @@ app.use(
   reqUser,
 )
 
-app.use(`${v}/album`, albumRouter)
-app.use(`${v}/photo`, photoRouter)
+app.use(`${v}/albums`, albumRouter)
+app.use(`${v}/photos`, photoRouter)
 app.all('*', (req, res) => { throw '404' })
 
 app.use(errorHandler)

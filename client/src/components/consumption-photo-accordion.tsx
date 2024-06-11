@@ -11,6 +11,7 @@ import { randomBytes } from "crypto"
 import { Sha256 } from "@aws-crypto/sha256-browser"
 import { getUploadUrl } from "./actions"
 import Carousel from "./carousel"
+import Link from "next/link"
 
 interface Album {
   id: string; name: string
@@ -27,7 +28,7 @@ const AlbumSelector = ({ selectedAlbum, setSelectedAlbum }: {
   const params = useParams()
   useEffect(() => {
     const jId = params.journeyId as string
-    axios.get(`/api/v1/album?journeyId=${jId}`)
+    axios.get(`/api/v1/albums?journeyId=${jId}`)
       .then(({ data }) => { setAlbums(data.albums) })
     const handleClickOurside = (e: MouseEvent) => {
       if (albumMenu.current && togglebutton.current
@@ -126,7 +127,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
   useEffect(() => {
     setReqState('loading')
-    axios.get(`/api/v1/photo/?consumptionId=${consumption.id}`)
+    axios.get(`/api/v1/photos/?consumptionId=${consumption.id}`)
       .then(({ data }) => {
         setPhotos(data.photos)
         setReqState('')
@@ -172,7 +173,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
         { headers: { "Content-Type": object[0].type } })
       console.log(s3url.split('?')[0])
       // photo data to backend
-      const { data } = await axios.post('/api/v1/photo', {
+      const { data } = await axios.post('/api/v1/photos', {
         url: s3url.split('?')[0],
         description,
         albumId: selectedAlbum.id,
@@ -231,7 +232,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
           <Spinner />
         }
         {!object[0] && (reqState !== 'loading') &&
-          <div>
+          <div className="relative">
             <Carousel photos={photos} />
             <label className="absolute bottom-3 right-3 cursor-pointer">
               <Add props={{}} />
