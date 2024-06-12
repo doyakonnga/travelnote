@@ -11,7 +11,6 @@ const Carousel = ({ photos }: { photos: Photo[] }) => {
   const l = photos.length
   const jId = useParams().journeyId
   const [current, setCurrent] = useState(0)
-  console.log(photos, current, photos[current])
 
   return (
     <div>
@@ -20,12 +19,12 @@ const Carousel = ({ photos }: { photos: Photo[] }) => {
           style={{ transform: `translateX(${current * -100}%)` }}
         >
           {photos.map((p) =>
-            <div className="relative min-h-[32rem] min-w-full">
+            <div key={'img' + p.id}  className="relative min-h-[32rem] min-w-full">
               <Image
-                key={'img' + p.id} src={p.url}
+                src={p.url}
                 alt={p.description || 'user uploaded picture'}
-                layout='fill'
-                objectFit='contain'
+                fill
+                style={{ objectFit: 'contain' }}
               />
             </div>)}
         </div>
@@ -34,7 +33,6 @@ const Carousel = ({ photos }: { photos: Photo[] }) => {
           <button type='button'
             onClick={() => {
               setCurrent((prev) => (prev - 1 + l) % l)
-              console.log(current)
             }}
           >
             <FaArrowCircleLeft />
@@ -44,7 +42,6 @@ const Carousel = ({ photos }: { photos: Photo[] }) => {
           <button type='button'
             onClick={() => {
               setCurrent((prev) => (prev + 1) % l)
-              console.log(current)
             }}
           >
             <FaArrowCircleRight />

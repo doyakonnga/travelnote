@@ -151,7 +151,8 @@ export async function createPhoto(attrs: photoInit) {
       userId: attrs.userId,
       albumId: attrs.albumId,
       consumptionId: attrs.consumptionId
-    }
+    }, 
+    include: {album: true}
   })
 }
 
