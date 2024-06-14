@@ -17,20 +17,20 @@ const UserDropdown = ({ currentUser }: {
   const toggleButton: React.MutableRefObject<null | HTMLButtonElement> = useRef(null)
   const panel = useRef<HTMLDivElement>(null)
   const [expanded, setExpanded] = useState(false)
-  const handleClickOutside = (e: MouseEvent) => {
-    if (panel.current && toggleButton.current &&
-      !e.composedPath().includes(panel.current) &&
-      !e.composedPath().includes(toggleButton.current)
-    )
-      setExpanded(false)
-  }
-  const handleKeydownEsc = (e: KeyboardEvent) => {
-    if (e.code === 'Escape')
-      setExpanded(false)
-  }
-
+  
   useEffect(() => {
-    if (!expanded) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panel.current && toggleButton.current &&
+        !e.composedPath().includes(panel.current) &&
+        !e.composedPath().includes(toggleButton.current)
+      )
+        setExpanded(false)
+    }
+    const handleKeydownEsc = (e: KeyboardEvent) => {
+      if (e.code === 'Escape')
+        setExpanded(false)
+    }
+    if (!expanded) return () => {}
     document.body.addEventListener('click', handleClickOutside)
     document.body.addEventListener('keydown', handleKeydownEsc)
     return () => { 

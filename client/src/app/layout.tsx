@@ -63,8 +63,11 @@ declare global {
     userId: string;
     createdAt: Date;
     albumId: string;
+  }
+
+  type PhotoJoinedAlbum = Photo & {
     album: {name: string}
-    consumptionId: string | null;
+    consumptionId: string | null
   }
 
   type Album = {

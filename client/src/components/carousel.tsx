@@ -7,7 +7,7 @@ import { useState } from "react"
 import { FaArrowCircleRight, FaArrowCircleLeft } from "react-icons/fa"
 import { BiPhotoAlbum } from "react-icons/bi";
 
-const Carousel = ({ photos }: { photos: Photo[] }) => {
+const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
   const l = photos.length
   const jId = useParams().journeyId
   const [current, setCurrent] = useState(0)

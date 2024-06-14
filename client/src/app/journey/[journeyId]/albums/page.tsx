@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 import Image from "next/image"
 import Link from "next/link"
 import { RiFolderAddLine } from "react-icons/ri";
-import { AddingAlbumModal } from "@/components/input-modal"
+import { AddingAlbumModal, EditingAlbumModal } from "@/components/input-modal"
 
 
 const AlbumsPage = async ({ params }: { params: { journeyId: string } }) => {
@@ -26,6 +26,7 @@ const AlbumsPage = async ({ params }: { params: { journeyId: string } }) => {
 
   return (
     <div className="relative">
+      <EditingAlbumModal albums={albums} />
       <AddingAlbumModal />
       <div className="flex flex-wrap gap-2">
         {albums.map((a) =>

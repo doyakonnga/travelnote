@@ -14,6 +14,7 @@ albumRouter.get('/', async (req, res) => {
 albumRouter.post('/',
   body('journeyId').isString(),
   body('name').isString(),
+  validation,
   async (req, res) => {
     if (!req.user?.id) throw '401'
     const album = await createAlbum({
@@ -27,7 +28,7 @@ albumRouter.post('/',
 
 albumRouter.patch('/:id',
   param('id').isString(), 
-  body('name').isString,
+  body('name').isString(),
   validation,
   async (req, res) => {
     const id: string = req.params.id
