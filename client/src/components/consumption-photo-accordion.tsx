@@ -120,7 +120,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
     id: string
     msg: string
   } | 'loading' | ''>('')
-  const [photos, setPhotos] = useState<Photo[]>([])
+  const [photos, setPhotos] = useState<PhotoJoinedAlbum[]>([])
   const [object, setObject] = useState<[File | null, string]>([null, ''])
   const [description, setDescription] = useState('')
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
