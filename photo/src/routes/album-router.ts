@@ -1,5 +1,5 @@
 import express from 'express'
-import { createAlbum, deleteAlbumById, journeyAlbumById, moveAllphotos, updateAlbum } from '../prisma-client'
+import { createAlbum, deleteAlbumById, getAlbumById, journeyAlbumById, moveAllphotos, updateAlbum } from '../prisma-client'
 import { body, param } from 'express-validator'
 import { validation } from '../middlewares/validation-result'
 
@@ -9,6 +9,16 @@ albumRouter.get('/', async (req, res) => {
   const id = req.query.journeyId as string
   const albums = await journeyAlbumById(id)
   return res.status(200).json({ albums })
+})
+
+albumRouter.get('/:id',
+  param('id').isString(),
+  validation,
+  async (req, res) => {
+    const id: string = req.params.id
+    const album = await getAlbumById(id)
+    if (!album) throw '404'
+    return res.status(200).json({ album })
 })
 
 albumRouter.post('/',
@@ -45,7 +55,7 @@ albumRouter.delete('/:id',
     await moveAllphotos({
       originId: req.params.id, targetName: 'unclassified'
     })
-    await deleteAlbumById(req.params.id)
-    return res.status(200).json({ })
+    const album = await deleteAlbumById(req.params.id)
+    return res.status(200).json({ album })
   }
 )

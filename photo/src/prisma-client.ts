@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 export const prisma = new PrismaClient()
 
 export async function createJourney(journey: {
@@ -49,16 +50,34 @@ export async function journeyAlbumById(id: string) {
   })
 }
 
+export async function getAlbumById(id: string) {
+  return await prisma.album.findUnique({
+    where: { id },
+    include: {
+      photos: {
+        orderBy: { createdAt: 'desc' }
+      }
+    }
+  })
+}
+
 export async function createAlbum({ name, userId, journeyId }: {
   name: string
   userId: string
   journeyId: string
 }) {
-  return await prisma.album.create({
-    data: {
-      name, userId, journeyId
-    }
-  })
+  try {
+    return await prisma.album.create({
+      data: {
+        name, userId, journeyId
+      }
+    })
+  } catch(e) {
+    if (e instanceof PrismaClientKnownRequestError)
+      if (e.code === 'P2002')
+        throw 'unique constraint violation'
+    throw e
+  }
 }
 
 export async function updateAlbum({ id, name }: {
@@ -107,20 +126,14 @@ export async function deleteAlbumById(id: string) {
 export async function consumptionPhotoById(id: string) {
   return await prisma.photo.findMany({
     where: { consumptionId: id },
-    include: {
-      consumption: true,
-      album: true
-    }
+    include: { album: true }
   })
 }
 
 export async function albumPhotoById(id: string) {
   return await prisma.photo.findMany({
     where: { albumId: id },
-    include: {
-      consumption: true,
-      album: true
-    }
+    include: { album: true }
   })
 }
 
@@ -129,10 +142,7 @@ export async function journeyPhotoById(id: string) {
     where: {
       album: { journeyId: id }
     },
-    include: {
-      consumption: true,
-      album: true
-    }
+    include: { album: true }
   })
 }
 
@@ -151,8 +161,8 @@ export async function createPhoto(attrs: photoInit) {
       userId: attrs.userId,
       albumId: attrs.albumId,
       consumptionId: attrs.consumptionId
-    }, 
-    include: {album: true}
+    },
+    include: { album: true }
   })
 }
 
