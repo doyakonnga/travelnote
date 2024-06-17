@@ -2,7 +2,6 @@ import axios from "axios"
 import { cookies } from "next/headers"
 import Image from "next/image"
 import Link from "next/link"
-import { RiFolderAddLine } from "react-icons/ri";
 import { AddingAlbumModal, EditingAlbumModal } from "@/components/input-modal"
 
 

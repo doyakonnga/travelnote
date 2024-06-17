@@ -4,8 +4,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useState } from "react"
-import { FaArrowCircleRight, FaArrowCircleLeft } from "react-icons/fa"
-import { BiPhotoAlbum } from "react-icons/bi";
+import { AngleLeft, AngleRight, Folder } from "./svg"
+// import { FaArrowCircleRight, FaArrowCircleLeft } from "react-icons/fa"
+// import { BiPhotoAlbum } from "react-icons/bi";
 
 const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
   const l = photos.length
@@ -35,7 +36,8 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
               setCurrent((prev) => (prev - 1 + l) % l)
             }}
           >
-            <FaArrowCircleLeft />
+            <AngleLeft/>
+            {/* <FaArrowCircleLeft /> */}
           </button>
         </div>
         <div className="absolute right-5 inset-y-0 flex justify-between items-center text-white text-3xl">
@@ -44,7 +46,8 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
               setCurrent((prev) => (prev + 1) % l)
             }}
           >
-            <FaArrowCircleRight />
+            <AngleRight/>
+            {/* <FaArrowCircleRight /> */}
           </button>
         </div>
         {/* dots */}
@@ -61,7 +64,8 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
           <div className="flex items-center justify-center">
             <Link className="flex items-center gap-1 text-sky-300"
               href={`/journey/${jId}/albums/${photos[current].albumId}`}>
-              <BiPhotoAlbum />
+              <Folder/>
+              {/* <BiPhotoAlbum /> */}
               <p>{photos[current].album.name}</p>
             </Link>
           </div>

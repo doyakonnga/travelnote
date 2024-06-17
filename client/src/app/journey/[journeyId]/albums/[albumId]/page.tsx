@@ -13,8 +13,9 @@ const AlbumPage = async ({ params }: {
   let photos: Photo[] = []
   try {
     const { data } = await axios
-      .get(`${process.env.NGINX_HOST}/api/v1/album/${aId}?journeyId=${jId}`,
-        { headers: {
+      .get(`${process.env.NGINX_HOST}/api/v1/albums/${aId}?journeyId=${jId}`,
+        {
+          headers: {
             Host: "travelnote.com",
             Cookie
           }
@@ -27,9 +28,12 @@ const AlbumPage = async ({ params }: {
 
   return (
     <div>
-      <Link href={`/journey/${jId}/albums`}>{'Albums>>'}</Link>
-      <Link href="#">{album.name}</Link>
-      <PhotoPanel photos={album.photos}/>
+      <div className="py-1 my-2">
+        <Link href={`/journey/${jId}/albums`} className="hover:text-blue-500">{'Albums'}</Link>
+        <span>{' >> '}</span>
+        <Link href="#" className="hover:text-blue-500">{album.name}</Link>
+      </div>
+      <PhotoPanel photos={album.photos} />
     </div>
   )
 }

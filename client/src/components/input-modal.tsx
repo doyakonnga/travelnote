@@ -4,11 +4,12 @@ import { ReactElement, ReactNode, useEffect, useRef, useState } from "react"
 import Spinner from "./spinner"
 import Alert from "./alert"
 import { randomBytes } from "crypto"
-import { RiFolderAddLine } from "react-icons/ri"
-import { TbEdit } from "react-icons/tb";
+// import { RiFolderAddLine } from "react-icons/ri"
+// import { TbEdit } from "react-icons/tb";
 import axios from "axios"
 import { useParams, useRouter } from "next/navigation"
 import ConfirmModal from "./confirm-modal"
+import { Add, FilePen } from "./svg"
 
 const InputModal = ({ text, loading, handleOk, handleCancel }: {
   text: string
@@ -51,8 +52,8 @@ export const AddingAlbumModal = () => {
 
   return (
     <div>
-      <RiFolderAddLine
-        className="p-1 hover:bg-gray-100 absolute bottom-4 right-4 rounded-md text-4xl"
+      <Add
+        className="p-1 hover:bg-gray-100 absolute bottom-4 right-4 rounded-md text-4xl cursor-pointer"
         onClick={() => {
           setModalText("Create a new album: ")
           setResult({ state: '', id: '' })
@@ -111,8 +112,8 @@ export const EditingAlbumModal = ({ albums }: { albums: Album[] }) => {
     <div>
       {/* toggle album menu */}
       <div className="absolute bottom-4 right-14 ">
-        <TbEdit
-          className="p-1 hover:bg-gray-100 rounded-md text-4xl"
+        <FilePen
+          className="p-1 hover:bg-gray-100 rounded-md text-4xl cursor-pointer"
           onClick={() => { setExpanded(p => !p) }}
         />
         {/* album menu */}
