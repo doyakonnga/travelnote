@@ -1,31 +1,45 @@
 'use client'
 
 import Image from "next/image"
-import { useEffect, useState } from "react"
-import { ArrowRepeat, Close } from "./svg"
+import { Dispatch, SetStateAction, useEffect, useState } from "react"
+import { ArrowRepeat, Close, TrashBin } from "./svg"
 import axios from "axios"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Spinner from "./spinner"
+import ConfirmModal from "./confirm-modal"
+import Alert from "./alert"
+import { randomBytes } from "crypto"
 
+type ReqState = { res: 'ok' | 'err'; msg: string } | 'loading' | ''
+const id = () => randomBytes(4).toString('ascii')
 
-const AlbumMenu = () => {
-  const [albums, setAlbum] = useState<Album[]>([])
-  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
+const AlbumMenu = ({
+  expanded, setExpanded, selectedAlbum, setSelectedAlbum,
+  setModalAction }:
+  {
+    expanded: boolean;
+    setExpanded: Dispatch<SetStateAction<boolean>>;
+    selectedAlbum: Album | null;
+    setSelectedAlbum: Dispatch<SetStateAction<Album | null>>
+    setModalAction: Dispatch<SetStateAction<string>>
+  }) => {
+  const { journeyId, albumId }: { [k: string]: string } = useParams()
   const [loading, setLoading] = useState(false)
-  const { journeyId: jId }: { journeyId: string } = useParams()
+  // const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
+  const [albums, setAlbum] = useState<Album[]>([])
   useEffect(() => {
     setLoading(true)
-    axios.get(`/api/v1/albums?journeyId=${jId}`)
+    axios.get(`/api/v1/albums?journeyId=${journeyId}`)
       .then(({ data }) => setAlbum(data.albums))
       .catch((e) => console.log(e))
       .finally(() => setLoading(false))
   }, [])
 
-  return (
+  return (!expanded ? <></> :
     < div id="dropdown-menu" className="absolute right-0 bottom-7 space-y-2 w-72 p-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 " >
-      <h1 className="p-1 font font-medium">Select an album: </h1>
+      <h1 className="p-1 font font-medium">Move to the album: </h1>
       {loading ? <Spinner /> :
-        albums.filter(a => a.name !== 'unclassified').map((album) => (
+        albums.filter(a => a.id !== albumId).map((album) => (
           <p
             key={album.id}
             className={"block px-4 py-2 mb-1 text-sm text-gray-900 rounded-md " +
@@ -36,30 +50,21 @@ const AlbumMenu = () => {
             {album.name}
           </p>))
       }
-      {
-        selectedAlbum &&
+      {selectedAlbum &&
         <div className="flex justify-between py-1">
           <button
             type="button"
             id="submit-button"
-            className="w-20 px-2 py-1 bg-rose-400 text-black rounded-md hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            onClick={() => { }}
-          >
-            Delete
-          </button>
-          <button
-            type="button"
-            id="submit-button"
             className="w-20 px-2 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            onClick={() => { }}
+            onClick={() => { setModalAction('move') }}
           >
-            Rename
+            Move
           </button>
           <button
             type="button"
             id="submit-button"
             className="w-20 px-2 py-1 bg-gray-300 text-black rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            onClick={() => { }}
+            onClick={() => { setExpanded(false) }}
           >
             Cancel
           </button>
@@ -70,15 +75,86 @@ const AlbumMenu = () => {
 }
 
 const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
+  const { journeyId, albumId }: { [k: string]: string } = useParams()
+  const router = useRouter()
+  // select photos
   const [selectedPhotos, setSelectedPhotos] =
     useState<{ [key: string]: {} }>({})
-  const [expanded, setExpanded] = useState(false)
-  const selectionArray: string[] = []
+  const selectedPhotoIds: string[] = []
   Object.keys(selectedPhotos).forEach((pId) =>
-    selectedPhotos[pId] && selectionArray.push(pId))
+    selectedPhotos[pId] && selectedPhotoIds.push(pId))
+  // select album
+  const [expanded, setExpanded] = useState(false)
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
+  // request
+  const [modalAction, setModalAction] = useState('')
+  const [reqState, setReqState] = useState<ReqState>('')
+  const reset = (ok?: boolean) => {
+    setExpanded(false)
+    setModalAction('')
+    if (ok) {
+      setSelectedPhotos({})
+      setSelectedAlbum(null)
+      router.refresh()
+    }
+  }
 
   return (
     <div className="flex flex-wrap gap-2 p-3 pb-10">
+      {/* Spinner and Alert */}
+      <div className="w-full">
+        {!reqState ? <></> :
+          reqState === 'loading' ?
+            <Spinner /> :
+            reqState.res === 'ok' ?
+              <Alert color='green' id=''>{reqState.msg}</Alert> :
+              <Alert color='red' id=''>{reqState.msg}</Alert>
+        }
+      </div>
+      {/* Modal */}
+      {modalAction === 'move' && selectedAlbum &&
+        <ConfirmModal
+          text={`Moving ${selectedPhotoIds.length} photos to the album "${selectedAlbum?.name}"`}
+          loading={reqState === 'loading'}
+          handleOk={async () => {
+            try {
+              setReqState('loading')
+              const { data } = await axios.patch(`/api/v1/photos?journeyId=${journeyId}`,
+                { albumId: selectedAlbum.id, photoIds: selectedPhotoIds })
+              setReqState({ res: 'ok', msg: `${data.count} photos has been moved to Album: ${selectedAlbum?.name}.` })
+              reset(true)
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : 'Operation failed, try again later.'
+              setReqState({ res: 'err', msg })
+              reset()
+            }
+          }}
+          handleCancel={() => { setModalAction('') }}
+        />
+      }
+      {modalAction === 'delete' && 
+        <ConfirmModal
+          text={`Are you sure you want to delete ${selectedPhotoIds.length} photos permanently?`}
+          loading={reqState === 'loading'}
+          handleOk={async () => {
+            try {
+              setReqState('loading')
+              const query = selectedPhotoIds.map((id) => `ids[]=${id}`).join('&')
+              const { data } = await axios.delete(
+                `/api/v1/photos?journeyId=${journeyId}&${query}`)
+              setReqState({ res: 'ok', msg: `${data.count} photos has been deleted` })
+              reset(true)
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : 'Operation failed, try again later.'
+              setReqState({ res: 'err', msg })
+              reset()
+            }
+          }}
+          handleCancel={() => { setModalAction('') }}
+        />
+
+      }
+      {/* Photos */}
       {photos.map((p) =>
         <div key={p.id}
           className="relative w-36 h-36 overflow-hidden shadow-md">
@@ -86,6 +162,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
             src={p.url}
             alt={p.description || 'photo'}
             fill
+            sizes='8rem'
             className={"object-cover " + (selectedPhotos[p.id] ? 'border-2 border-sky-500' : '')}
           />
           <label className="absolute -top-2 -left-2 flex items-center p-3 rounded-full cursor-pointer" htmlFor="check">
@@ -107,16 +184,28 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
             </span>
           </label>
         </div>)}
-
-      {!!selectionArray.length &&
+      {/* Control bar */}
+      {!!selectedPhotoIds.length &&
         <div className="fixed bottom-4 left-2/4 -translate-x-2/4 rounded-full bg-white w-80 px-4 py-2 flex justify-between">
-          <p className="flex items-center">{`Selected: ${selectionArray.length}`}</p>
-          <div className="flex">
-            <div>
+          <p className="flex items-center">{`Selected: ${selectedPhotoIds.length}`}</p>
+          <div className="flex items-center">
+            {/* delete button */}
+            <TrashBin className="p-1 text-l cursor-pointer"
+              onClick={() => setModalAction('delete')} />
+            {/* Move button and album menu */}
+            <div className="relative">
               <ArrowRepeat className="p-1 text-l cursor-pointer"
                 onClick={() => setExpanded(p => !p)} />
-              {expanded && <AlbumMenu />}
+              {expanded &&
+                <AlbumMenu
+                  expanded={expanded}
+                  setExpanded={setExpanded}
+                  selectedAlbum={selectedAlbum}
+                  setSelectedAlbum={setSelectedAlbum}
+                  setModalAction={setModalAction}
+                />}
             </div>
+            {/* close button */}
             <Close className="p-1 text-m cursor-pointer text-gray-700"
               width='30'
               onClick={() => setSelectedPhotos({})}

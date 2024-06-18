@@ -37,6 +37,7 @@ const AlbumsPage = async ({ params }: { params: { journeyId: string } }) => {
                   src={a.photos[0] ? a.photos[0].url : '/gray.png'}
                   alt={'album cover of ' + a.name}
                   fill
+                  sizes='8rem'
                   className="object-cover"
                 />
               </div>

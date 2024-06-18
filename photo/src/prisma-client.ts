@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 export const prisma = new PrismaClient()
 
@@ -72,7 +72,7 @@ export async function createAlbum({ name, userId, journeyId }: {
         name, userId, journeyId
       }
     })
-  } catch(e) {
+  } catch (e) {
     if (e instanceof PrismaClientKnownRequestError)
       if (e.code === 'P2002')
         throw 'unique constraint violation'
@@ -88,6 +88,16 @@ export async function updateAlbum({ id, name }: {
     where: { id },
     data: { name },
     include: { photos: true }
+  })
+}
+
+export async function movePhotos(props: {
+  albumId: string
+  photoIds: string[]
+}) {
+  return await prisma.photo.updateMany({
+    where: { id: { in: props.photoIds } },
+    data: { albumId: props.albumId }
   })
 }
 
@@ -179,6 +189,20 @@ export async function updatePhoto(attrs: {
   })
 }
 
-export async function deletePhotoById(id: string) {
-  return await prisma.photo.delete({ where: { id } })
+export async function deletePhotoById(id: string): Promise<{
+  id: string;
+  url: string;
+  description: string | null;
+  userId: string;
+  createdAt: Date;
+  albumId: string;
+  consumptionId: string | null;
+}>
+export async function deletePhotoById(id: string[]): Promise<Prisma.BatchPayload>
+export async function deletePhotoById(id: string | string[]) {
+  if (typeof id === 'string')
+    return await prisma.photo.delete({ where: { id } })
+  else
+    return await prisma.photo.deleteMany({ where: { id: { in: id } } })
 }
+

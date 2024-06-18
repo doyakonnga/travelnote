@@ -1,6 +1,6 @@
 import express from 'express'
-import { albumPhotoById, consumptionPhotoById, createPhoto, deletePhotoById, journeyPhotoById } from '../prisma-client'
-import { body, param } from 'express-validator'
+import { albumPhotoById, consumptionPhotoById, createPhoto, deletePhotoById, journeyPhotoById, movePhotos } from '../prisma-client'
+import { body, param, query } from 'express-validator'
 import { validation } from '../middlewares/validation-result'
 
 export const photoRouter = express.Router()
@@ -47,10 +47,47 @@ photoRouter.post('/',
   }
 )
 
+photoRouter.patch('/',
+  body('albumId').isString(),
+  body('photoIds').custom((photoIds: any) => {
+    if (!Array.isArray(photoIds))
+      throw new Error('photosIds must be array')
+    photoIds.forEach((id) => {
+      if (typeof id !== 'string')
+        throw new Error('photosIds must be array of string')
+    })
+    return true
+  }),
+  validation,
+  async (req, res) => {
+    const albumId: string = req.body.albumId
+    const photoIds: string[] = req.body.photoIds
+    res.status(200).json(await movePhotos({ albumId, photoIds }))
+  }
+)
+
 photoRouter.delete('/:id',
   param('id').isString(),
   async (req, res) => {
-    await deletePhotoById(req.params!.id)
-    return res.status(200).json({ })
+    const photo = await deletePhotoById(req.params!.id)
+    return res.status(200).json({ photo })
+  }
+)
+
+photoRouter.delete('/',
+  query('ids').custom((ids: any) => {
+    if (!Array.isArray(ids))
+      throw new Error('photosIds must be array')
+    ids.forEach((id) => {
+      if (typeof id !== 'string')
+        throw new Error('photosIds must be array of string')
+    })
+    return true
+  }),
+  validation, 
+  async (req, res) => {
+    const ids: string[] = req.query.ids as string[]
+    const { count } = await deletePhotoById(ids)
+    res.status(200).json({ count })
   }
 )
