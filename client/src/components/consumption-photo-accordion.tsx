@@ -178,7 +178,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
         albumId: selectedAlbum.id,
         consumptionId: consumption.id
       })
-      setPhotos((prev) => [...prev, data.photo])
+      setPhotos((prev) => [data.photo, ...prev])
       setReqState({
         result: 'ok',
         id: randomBytes(4).toString(),

@@ -9,6 +9,7 @@ import Spinner from "./spinner"
 import ConfirmModal from "./confirm-modal"
 import Alert from "./alert"
 import { randomBytes } from "crypto"
+import { deleteFromS3 } from "./actions"
 
 type ReqState = { res: 'ok' | 'err'; msg: string } | 'loading' | ''
 const id = () => randomBytes(4).toString('ascii')
@@ -79,7 +80,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
   const router = useRouter()
   // select photos
   const [selectedPhotos, setSelectedPhotos] =
-    useState<{ [key: string]: {} }>({})
+    useState<{ [key: string]: Photo | false }>({})
   const selectedPhotoIds: string[] = []
   Object.keys(selectedPhotos).forEach((pId) =>
     selectedPhotos[pId] && selectedPhotoIds.push(pId))
@@ -132,7 +133,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
           handleCancel={() => { setModalAction('') }}
         />
       }
-      {modalAction === 'delete' && 
+      {modalAction === 'delete' &&
         <ConfirmModal
           text={`Are you sure you want to delete ${selectedPhotoIds.length} photos permanently?`}
           loading={reqState === 'loading'}
@@ -142,6 +143,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
               const query = selectedPhotoIds.map((id) => `ids[]=${id}`).join('&')
               const { data } = await axios.delete(
                 `/api/v1/photos?journeyId=${journeyId}&${query}`)
+              Object.values(selectedPhotos).forEach( p => p && deleteFromS3(p.url))
               setReqState({ res: 'ok', msg: `${data.count} photos has been deleted` })
               reset(true)
             } catch (e) {
@@ -170,7 +172,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
               className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-md border border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-indigo-500 checked:bg-indigo-500 checked:before:bg-indigo-500 hover:before:opacity-10"
               id="check" checked={!!selectedPhotos[p.id]}
               onChange={() => setSelectedPhotos((prev) => {
-                return { ...prev, [p.id]: !prev[p.id] }
+                return { ...prev, [p.id]: (prev[p.id] ? p : false) }
               })}
             />
             <span

@@ -45,7 +45,7 @@ export async function deleteFromS3(url: string) {
     Key: url.split('/').pop()
   })
   try { await s3.send(command) }
-  catch (e) { console.error('s3 upload error', e) }
+  catch (e) { console.error('s3 delete error', e) }
 }
 
 export async function refresh(path?: string) {

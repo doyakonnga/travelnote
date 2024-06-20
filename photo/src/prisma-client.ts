@@ -136,14 +136,16 @@ export async function deleteAlbumById(id: string) {
 export async function consumptionPhotoById(id: string) {
   return await prisma.photo.findMany({
     where: { consumptionId: id },
-    include: { album: true }
+    include: { album: true },
+    orderBy: { createdAt: 'desc'}
   })
 }
 
 export async function albumPhotoById(id: string) {
   return await prisma.photo.findMany({
     where: { albumId: id },
-    include: { album: true }
+    include: { album: true },
+    orderBy: { createdAt: 'desc' }
   })
 }
 
@@ -152,7 +154,8 @@ export async function journeyPhotoById(id: string) {
     where: {
       album: { journeyId: id }
     },
-    include: { album: true }
+    include: { album: true },
+    orderBy: { createdAt: 'desc' }
   })
 }
 
