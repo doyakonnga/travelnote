@@ -10,8 +10,9 @@ import ConfirmModal from "./confirm-modal"
 import Alert from "./alert"
 import { randomBytes } from "crypto"
 import { deleteFromS3 } from "./actions"
+import { MultipleFileUploadingModal } from "./multiple-file-upload-modal"
 
-type ReqState = { res: 'ok' | 'err'; msg: string } | 'loading' | ''
+type ReqState = { res: 'ok' | 'err'; id: string; msg: string } | 'loading' | ''
 const id = () => randomBytes(4).toString('ascii')
 
 const AlbumMenu = ({
@@ -26,7 +27,6 @@ const AlbumMenu = ({
   }) => {
   const { journeyId, albumId }: { [k: string]: string } = useParams()
   const [loading, setLoading] = useState(false)
-  // const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
   const [albums, setAlbum] = useState<Album[]>([])
   useEffect(() => {
     setLoading(true)
@@ -90,29 +90,30 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
   // request
   const [modalAction, setModalAction] = useState('')
   const [reqState, setReqState] = useState<ReqState>('')
-  const reset = (ok?: boolean) => {
+  const reset = (status?: 'ok' | 'err') => {
     setExpanded(false)
     setModalAction('')
-    if (ok) {
-      setSelectedPhotos({})
-      setSelectedAlbum(null)
-      router.refresh()
-    }
+    if (status === 'err')
+      return
+    setSelectedPhotos({})
+    setSelectedAlbum(null)
+    if (status === 'ok') 
+      return router.refresh()
   }
 
   return (
-    <div className="flex flex-wrap gap-2 p-3 pb-10">
+    <div className="flex flex-wrap gap-2 p-3 pb-10 relative">
       {/* Spinner and Alert */}
       <div className="w-full">
         {!reqState ? <></> :
           reqState === 'loading' ?
             <Spinner /> :
             reqState.res === 'ok' ?
-              <Alert color='green' id=''>{reqState.msg}</Alert> :
-              <Alert color='red' id=''>{reqState.msg}</Alert>
+              <Alert color='green' id={reqState.id}>{reqState.msg}</Alert> :
+              <Alert color='red' id={reqState.id}>{reqState.msg}</Alert>
         }
       </div>
-      {/* Modal */}
+      {/* Move Modal */}
       {modalAction === 'move' && selectedAlbum &&
         <ConfirmModal
           text={`Moving ${selectedPhotoIds.length} photos to the album "${selectedAlbum?.name}"`}
@@ -122,17 +123,20 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
               setReqState('loading')
               const { data } = await axios.patch(`/api/v1/photos?journeyId=${journeyId}`,
                 { albumId: selectedAlbum.id, photoIds: selectedPhotoIds })
-              setReqState({ res: 'ok', msg: `${data.count} photos has been moved to Album: ${selectedAlbum?.name}.` })
-              reset(true)
+              setReqState({ 
+                res: 'ok', id: id(),
+                msg: `${data.count} photos has been moved to Album: ${selectedAlbum?.name}.` })
+              reset('ok')
             } catch (e) {
               const msg = e instanceof Error ? e.message : 'Operation failed, try again later.'
-              setReqState({ res: 'err', msg })
-              reset()
+              setReqState({ res: 'err', id: id(), msg })
+              reset('err')
             }
           }}
           handleCancel={() => { setModalAction('') }}
         />
       }
+      {/* Delete Modal */}
       {modalAction === 'delete' &&
         <ConfirmModal
           text={`Are you sure you want to delete ${selectedPhotoIds.length} photos permanently?`}
@@ -143,19 +147,22 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
               const query = selectedPhotoIds.map((id) => `ids[]=${id}`).join('&')
               const { data } = await axios.delete(
                 `/api/v1/photos?journeyId=${journeyId}&${query}`)
-              Object.values(selectedPhotos).forEach( p => p && deleteFromS3(p.url))
-              setReqState({ res: 'ok', msg: `${data.count} photos has been deleted` })
-              reset(true)
+              Object.values(selectedPhotos).forEach( p => 
+                p && deleteFromS3(p.url).catch(e => console.log(e)))
+              setReqState({ res: 'ok', id: id(), msg: `${data.count} photos has been deleted` })
+              reset('ok')
             } catch (e) {
               const msg = e instanceof Error ? e.message : 'Operation failed, try again later.'
-              setReqState({ res: 'err', msg })
-              reset()
+              setReqState({ res: 'err', id: id(), msg })
+              reset('err')
             }
           }}
           handleCancel={() => { setModalAction('') }}
         />
-
       }
+      {/* Uploading Modal and Add button */}
+      <MultipleFileUploadingModal reset={reset} reqState={reqState} setReqState={setReqState}/>
+      
       {/* Photos */}
       {photos.map((p) =>
         <div key={p.id}
@@ -172,7 +179,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
               className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-md border border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-indigo-500 checked:bg-indigo-500 checked:before:bg-indigo-500 hover:before:opacity-10"
               id="check" checked={!!selectedPhotos[p.id]}
               onChange={() => setSelectedPhotos((prev) => {
-                return { ...prev, [p.id]: (prev[p.id] ? p : false) }
+                return { ...prev, [p.id]: (!prev[p.id] ? p : false) }
               })}
             />
             <span

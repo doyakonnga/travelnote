@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactElement, ReactNode, useEffect, useRef, useState } from "react"
+import { ChangeEvent, Dispatch, ReactElement, ReactNode, SetStateAction, useEffect, useRef, useState } from "react"
 import Spinner from "./spinner"
 import Alert from "./alert"
 import { randomBytes } from "crypto"
@@ -9,7 +9,9 @@ import { randomBytes } from "crypto"
 import axios from "axios"
 import { useParams, useRouter } from "next/navigation"
 import ConfirmModal from "./confirm-modal"
-import { Add, FilePen } from "./svg"
+import { Add, FilePen, FileImage, Close } from "./svg"
+import Image from "next/image"
+import { uploadToS3 } from "./client-action"
 
 const InputModal = ({ text, loading, handleOk, handleCancel }: {
   text: string
@@ -244,4 +246,8 @@ export const EditingAlbumModal = ({ albums }: { albums: Album[] }) => {
   )
 }
 
+
+
+
 export default InputModal
+

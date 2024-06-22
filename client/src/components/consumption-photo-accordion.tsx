@@ -8,10 +8,8 @@ import axios from "axios"
 import Spinner from "./spinner"
 import Alert from "./alert"
 import { randomBytes } from "crypto"
-import { Sha256 } from "@aws-crypto/sha256-browser"
-import { getUploadUrl } from "./actions"
 import Carousel from "./carousel"
-import Link from "next/link"
+import { uploadToS3 } from "./client-action"
 
 interface Album {
   id: string; name: string
@@ -159,21 +157,11 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
       if (!object[0])
         throw new Error('Please select a photos.')
       setReqState('loading')
-      const { type, size } = object[0]
       // photo to s3
-      const hash = new Sha256();
-      hash.update(await object[0].arrayBuffer());
-      const buf = await hash.digest()
-      const checkSum = Array.from(new Uint8Array(buf)).
-        map((b) => b.toString(16).padStart(2, '0')).join('')
-      const s3url = await getUploadUrl(type, size, checkSum)
-      if (typeof s3url !== 'string') throw Error(s3url.error)
-      await axios.put(s3url, object[0],
-        { headers: { "Content-Type": object[0].type } })
-      console.log(s3url.split('?')[0])
+      const s3url = await uploadToS3(object[0])
       // photo data to backend
       const { data } = await axios.post('/api/v1/photos', {
-        url: s3url.split('?')[0],
+        url: s3url,
         description,
         albumId: selectedAlbum.id,
         consumptionId: consumption.id

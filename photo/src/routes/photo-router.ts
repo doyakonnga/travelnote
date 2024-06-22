@@ -1,5 +1,5 @@
 import express from 'express'
-import { albumPhotoById, consumptionPhotoById, createPhoto, deletePhotoById, journeyPhotoById, movePhotos } from '../prisma-client'
+import { albumPhotoById, consumptionPhotoById, createMultiplePhoto, createPhoto, deletePhotoById, journeyPhotoById, movePhotos } from '../prisma-client'
 import { body, param, query } from 'express-validator'
 import { validation } from '../middlewares/validation-result'
 
@@ -47,6 +47,34 @@ photoRouter.post('/',
   }
 )
 
+photoRouter.post('/multiple',
+  (req, res, next) => {
+    body('userId').default(req.user?.id).isString()(req, res, next)
+  },
+  body('albumId').isString(),
+  body('urls').custom((urls) => {
+    if (!Array.isArray(urls))
+      throw new Error('urls must be array')
+    urls.forEach((url) => {
+      if (typeof url !== 'string')
+        throw new Error('urls must be array')
+    })
+    return true
+  }),
+  validation,
+  async (req, res) => {
+    const { userId, albumId, urls }: {
+      userId: string
+      albumId: string
+      urls: string[]
+    } = req.body
+    const { count } = await createMultiplePhoto({
+      userId, albumId, urls
+    })
+    res.status(200).json({ count })
+  }
+)
+
 photoRouter.patch('/',
   body('albumId').isString(),
   body('photoIds').custom((photoIds: any) => {
@@ -84,7 +112,7 @@ photoRouter.delete('/',
     })
     return true
   }),
-  validation, 
+  validation,
   async (req, res) => {
     const ids: string[] = req.query.ids as string[]
     const { count } = await deletePhotoById(ids)

@@ -1,5 +1,5 @@
+import { Renew } from '@/components/client-action'
 import JourneyCard from '@/components/journey-card-display'
-import Renew from '@/components/renew'
 import axios from 'axios'
 import { cookies } from 'next/headers'
 

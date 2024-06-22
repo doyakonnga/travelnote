@@ -179,6 +179,16 @@ export async function createPhoto(attrs: photoInit) {
   })
 }
 
+export async function createMultiplePhoto({ userId, albumId, urls }: {
+  userId: string; albumId: string; urls: string[]
+}) {
+  return await prisma.photo.createMany({
+    data: urls.map(url => { 
+      return { userId, albumId, url }
+    })
+  })
+}
+
 export async function updatePhoto(attrs: {
   id: string
   description: string
