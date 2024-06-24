@@ -29,6 +29,10 @@ export async function findUser(attr: { email: string }) {
   return user
 }
 
+export async function userById(id: string) {
+  return await prisma.user.findUnique({where: {id}})
+}
+
 export async function allUser() {
   return await prisma.user.findMany({
     select: {

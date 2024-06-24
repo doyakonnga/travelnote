@@ -11,6 +11,7 @@ import Alert from "./alert"
 import { randomBytes } from "crypto"
 import { deleteFromS3 } from "./actions"
 import { MultipleFileUploadingModal } from "./multiple-file-upload-modal"
+import PhotoDetailModal from "./photo-detail-modal"
 
 type ReqState = { res: 'ok' | 'err'; id: string; msg: string } | 'loading' | ''
 const id = () => randomBytes(4).toString('ascii')
@@ -97,7 +98,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
       return
     setSelectedPhotos({})
     setSelectedAlbum(null)
-    if (status === 'ok') 
+    if (status === 'ok')
       return router.refresh()
   }
 
@@ -123,9 +124,10 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
               setReqState('loading')
               const { data } = await axios.patch(`/api/v1/photos?journeyId=${journeyId}`,
                 { albumId: selectedAlbum.id, photoIds: selectedPhotoIds })
-              setReqState({ 
+              setReqState({
                 res: 'ok', id: id(),
-                msg: `${data.count} photos has been moved to Album: ${selectedAlbum?.name}.` })
+                msg: `${data.count} photos has been moved to Album: ${selectedAlbum?.name}.`
+              })
               reset('ok')
             } catch (e) {
               const msg = e instanceof Error ? e.message : 'Operation failed, try again later.'
@@ -147,7 +149,7 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
               const query = selectedPhotoIds.map((id) => `ids[]=${id}`).join('&')
               const { data } = await axios.delete(
                 `/api/v1/photos?journeyId=${journeyId}&${query}`)
-              Object.values(selectedPhotos).forEach( p => 
+              Object.values(selectedPhotos).forEach(p =>
                 p && deleteFromS3(p.url).catch(e => console.log(e)))
               setReqState({ res: 'ok', id: id(), msg: `${data.count} photos has been deleted` })
               reset('ok')
@@ -161,19 +163,25 @@ const PhotoPanel = ({ photos }: { photos: Photo[] }) => {
         />
       }
       {/* Uploading Modal and Add button */}
-      <MultipleFileUploadingModal reset={reset} reqState={reqState} setReqState={setReqState}/>
-      
+      <MultipleFileUploadingModal reset={reset} reqState={reqState} setReqState={setReqState} />
+      {/* photo detail modal */}
+      {modalAction.startsWith('detail') &&
+        <PhotoDetailModal setModalAction={setModalAction} photoString={modalAction.slice(6)} />
+      }
+
       {/* Photos */}
       {photos.map((p) =>
-        <div key={p.id}
-          className="relative w-36 h-36 overflow-hidden shadow-md">
-          <Image
-            src={p.url}
-            alt={p.description || 'photo'}
-            fill
-            sizes='8rem'
-            className={"object-cover " + (selectedPhotos[p.id] ? 'border-2 border-sky-500' : '')}
-          />
+        <div key={p.id} className="shadow-md relative">
+          <div onClick={() => setModalAction(`detail${JSON.stringify(p)}`)}
+            className="cursor-pointer relative w-36 h-36 overflow-hidden">
+            <Image
+              src={p.url}
+              alt={p.description || 'photo'}
+              fill
+              sizes='8rem'
+              className={"object-cover " + (selectedPhotos[p.id] ? 'border-2 border-sky-500' : '')}
+            />
+          </div>
           <label className="absolute -top-2 -left-2 flex items-center p-3 rounded-full cursor-pointer" htmlFor="check">
             <input type="checkbox"
               className="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-md border border-blue-gray-200 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity checked:border-indigo-500 checked:bg-indigo-500 checked:before:bg-indigo-500 hover:before:opacity-10"

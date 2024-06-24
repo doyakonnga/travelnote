@@ -112,8 +112,7 @@ export const MultipleFileUploadingModal = ({ reset, reqState, setReqState }: {
                 </button>
               </div>}
             {reqState === 'loading' && <Spinner />}
-            <Close className="absolute top-2 right-2" onClick={handleCandle}
-            />
+            <Close className="absolute top-2 right-2" onClick={handleCandle}/>
           </div>
         </div>
       }

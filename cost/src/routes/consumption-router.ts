@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express'
 import { body, param, validationResult } from 'express-validator'
 import '../middlewares/req-user'
-import { createConsumption, areUsersInJourney, journeyConsumptions, updateConsumption, deleteConsumptionById } from '../prisma-client'
+import { createConsumption, areUsersInJourney, journeyConsumptions, updateConsumption, deleteConsumptionById, consumptionById } from '../prisma-client'
 import connectRedpanda from '../redpanda'
 import { ConsumptionPublisher } from '../events/publishers/consumption-publisher'
 import { validation } from '../middlewares/validation-result'
@@ -13,6 +13,15 @@ consumptionRouter.get('/', async (req, res) => {
   const journeyId = req.query.journeyId as string
   const consumptions = await journeyConsumptions(journeyId)
   res.status(200).json({ consumptions })
+})
+
+consumptionRouter.get('/:id',
+  param("id").isString(),
+  validation, 
+  async (req, res) => {
+  const id: string = req.params.id
+  const consumption = await consumptionById(id)
+  return res.status(200).json({ consumption })
 })
 
 consumptionRouter.delete('/:id',

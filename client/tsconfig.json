@@ -36,5 +36,9 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  // https://github.com/vuejs/language-tools/issues/2619
+  "types": [
+    "vite/client",
   ]
 }

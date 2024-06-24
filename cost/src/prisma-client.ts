@@ -30,6 +30,13 @@ export async function areUsersInJourney(userIds: string[], journeyId: string) {
   return !usersNotIn.length
 }
 
+export async function consumptionById(id: string) {
+  return await prisma.consumption.findUnique({
+    where: { id },
+    include: { expenses: true }
+  })
+}
+
 export async function journeyConsumptions(id: string) {
   return await prisma.consumption.findMany({
     where: { journeyId: id },

@@ -93,7 +93,8 @@ const ConsumptionCard = ({ consumption, members }: {
   }
 
   return (
-    <div className='flex flex-wrap space-y-2 bg-slate-600 border-slate-700 rounded-md p-4'>
+    <div className='flex flex-wrap space-y-2 bg-slate-600 border-slate-700 rounded-md p-4'
+      id={consumption.id}>
       <h1 className="w-full space-x-2 ml-2">
         <span className="text-white">{consumpState.name}</span>
         {editButton({
