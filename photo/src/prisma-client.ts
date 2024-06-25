@@ -2,6 +2,19 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 export const prisma = new PrismaClient()
 
+function catchingWrapper<T extends any[], U>(f: (...arg: T) => Promise<U>) {
+  return async (...arg: T) => {
+    try {
+      return await f(...arg)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2025') throw '404'
+      }
+      throw e
+    }
+  }
+}
+
 export async function createJourney(journey: {
   id: string; members: { id: string }[]
 }) {
@@ -80,34 +93,47 @@ export async function createAlbum({ name, userId, journeyId }: {
   }
 }
 
-export async function updateAlbum({ id, name }: {
-  id: string
-  name: string
-}) {
+export const updateAlbum = catchingWrapper(async ({ id, name, journeyIds }: {
+  id: string; name: string; journeyIds: string[]
+}) => {
   return await prisma.album.update({
-    where: { id },
+    where: { id, journeyId: { in: journeyIds } },
     data: { name },
     include: { photos: true }
   })
-}
+})
 
-export async function movePhotos(props: {
-  albumId: string
-  photoIds: string[]
-}) {
-  return await prisma.photo.updateMany({
-    where: { id: { in: props.photoIds } },
-    data: { albumId: props.albumId }
+export async function albumAccessible(albumId: string, journeyIds: string[]) {
+  return !!await prisma.album.findUnique({
+    where: {
+      id: albumId, journeyId: { in: journeyIds }
+    }
   })
 }
 
-export async function moveAllphotos(props: {
+export const movePhotos = catchingWrapper(async (props: {
+  albumId: string
+  photoIds: string[]
+  journeyIds: string[]
+}) => {
+  return await prisma.photo.updateMany({
+    where: {
+      id: { in: props.photoIds },
+      album: { journeyId: { in: props.journeyIds } }
+    },
+    data: { albumId: props.albumId }
+  })
+})
+
+export const moveAllphotos = catchingWrapper(async (props: {
   originId: string
   targetName: string
-}) {
+  journeyIds: string[]
+}) => {
   const album = await prisma.album.findFirst({
     where: {
       journey: {
+        id: { in: props.journeyIds },
         albums: {
           some: { id: props.originId }
         }
@@ -124,26 +150,30 @@ export async function moveAllphotos(props: {
       albumId: album.id
     }
   })
-}
+})
 
-export async function deleteAlbumById(id: string) {
+export const deleteAlbumById = catchingWrapper(async(id: string) => {
   return await prisma.album.delete({
     where: { id },
     include: { photos: true }
   })
-}
+})
 
 export async function consumptionPhotoById(id: string) {
   return await prisma.photo.findMany({
-    where: { consumptionId: id },
+    where: {
+      consumptionId: id
+    },
     include: { album: true },
-    orderBy: { createdAt: 'desc'}
+    orderBy: { createdAt: 'desc' }
   })
 }
 
 export async function albumPhotoById(id: string) {
   return await prisma.photo.findMany({
-    where: { albumId: id },
+    where: {
+      albumId: id
+    },
     include: { album: true },
     orderBy: { createdAt: 'desc' }
   })
@@ -183,26 +213,26 @@ export async function createMultiplePhoto({ userId, albumId, urls }: {
   userId: string; albumId: string; urls: string[]
 }) {
   return await prisma.photo.createMany({
-    data: urls.map(url => { 
-      return { userId, albumId, url }
+    data: urls.map(url => {
+      return { userId, url, albumId }
     })
   })
 }
 
-export async function updatePhoto(attrs: {
+export const updatePhoto = catchingWrapper(async (attrs: {
   id: string
-  description: string
+  description?: string
   albumId?: string
   consumptionId?: string
-}) {
+}) => {
   const { description, albumId, consumptionId } = attrs
   return await prisma.photo.update({
     where: { id: attrs.id },
     data: { description, albumId, consumptionId }
   })
-}
+})
 
-export async function deletePhotoById(id: string): Promise<{
+export async function deletePhotoById(id: string, userId: string): Promise<{
   id: string;
   url: string;
   description: string | null;
@@ -211,11 +241,11 @@ export async function deletePhotoById(id: string): Promise<{
   albumId: string;
   consumptionId: string | null;
 }>
-export async function deletePhotoById(id: string[]): Promise<Prisma.BatchPayload>
-export async function deletePhotoById(id: string | string[]) {
+export async function deletePhotoById(id: string[], userId: string): Promise<Prisma.BatchPayload>
+export async function deletePhotoById(id: string | string[], userId: string) {
   if (typeof id === 'string')
-    return await prisma.photo.delete({ where: { id } })
+    return await prisma.photo.delete({ where: { id, userId } })
   else
-    return await prisma.photo.deleteMany({ where: { id: { in: id } } })
+    return await prisma.photo.deleteMany({ where: { id: { in: id }, userId } })
 }
 

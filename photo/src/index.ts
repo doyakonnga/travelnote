@@ -16,7 +16,9 @@ app.set('trust proxy', true)
 app.use(express.json())
 app.use(
   cookieSession({ signed: false }),
-  reqUser,
+  reqUser, (req, res, next) => {
+    if (!req.user) throw '401'
+    return next() }
 )
 
 app.use(`${v}/albums`, albumRouter)
@@ -29,10 +31,10 @@ const start = async () => {
   try {
     const [producer, consumer] = await redpandaConnect('photo')
     console.log('connected to redpanda')
-    
+
     await kafkaListen(
-      consumer, 
-      JourneyListener, 
+      consumer,
+      JourneyListener,
       ConsumptionListener
     )
 

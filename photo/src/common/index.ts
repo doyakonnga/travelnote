@@ -37,10 +37,9 @@ export async function kafkaListen(
   consumer: Consumer,
   ...Listeners: ExtendedListener[]) {
   // subscribe
-  const listeners: (InstanceType<ExtendedListener>)[] = []
-  Listeners.forEach((L) => listeners.push(new L(consumer)))
-  for (const listener of listeners)
-    await listener.subscribe()
+  // const listeners: (InstanceType<ExtendedListener>)[] = []
+  const listeners = Listeners.map(L => new L(consumer))
+  await Promise.all(listeners.map(l => l.subscribe()))
   // run
   await consumer.run({
     eachMessage: async (
