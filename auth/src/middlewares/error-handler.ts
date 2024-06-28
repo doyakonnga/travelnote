@@ -13,7 +13,7 @@ export const errorHandler = (
 
       case 'email not exist':
         return res.status(400)
-          .json([{ field: 'email', message: 'User with this email has not been signed.' }])
+          .json([{ field: 'email', message: 'User with this email has not been registered.' }])
       case 'password incorrect':
         return res.status(400)
           .json([{ field: 'password', message: 'Password Incorrect' }])

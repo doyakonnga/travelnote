@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres_photo
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_DB: photo
+      POSTGRES_HOST_AUTH_METHOD: trust
+  app:
+    build: .
+    ports: 
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://test:test@postgres:5432/photo
+    depends_on:
+      - postgres
