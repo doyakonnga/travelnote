@@ -17,7 +17,7 @@ userRouter.get('/', async (req, res) => {
 userRouter.get('/currentuser', (req, res) => {
   console.log('currentUser: ', req.user || 'null')
   if (!req.user) return res.json({ user: null })
-  return res.json({ user: req.user })
+  return res.status(200).json({ user: req.user })
 })
 
 userRouter.get('/:id',

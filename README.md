@@ -39,11 +39,11 @@ Travelnote is an application facilitating fellow travellers to track their expen
 - Signing up/ logging in with google account utilizing OAuth2.0
 - Editing user avatar, with default setting of google account avatar if existing
 
-### Co-editable journey
+### Co-editable journeys
 - Creating a co-editable journey with customized cover pictures uploaded by user
 - Searching users and adding members (authorization) into a journey by Registered email
 
-### Co-editable consumption record
+### Co-editable consumption records
 - Adding consumptions shared by and only accessible to the journey members
 - Editing/ deleting a consumption only by the paying user
 - Reviewing personal expenses and arrears
@@ -57,7 +57,7 @@ Travelnote is an application facilitating fellow travellers to track their expen
 - Creating/deleting albums to classify member-shared photos
 - Viewing/ redirecting to the binded consumption of a photo
 
-### Notification
+### Notifications
 - Receiving notification of a member's creating/ editing a consumption
 - Receiving notification of a member's creating/ editing a photo
 - Receiving notification of a member's creating a album or classifying some photos
@@ -72,7 +72,7 @@ Travelnote is an application facilitating fellow travellers to track their expen
 
 **Cloud(AWS):** Route 53/ EKS/ RDS-postgresql/ S3
 
-**Test:** Jest/ Supertest
+**Test:** Jest/ Supertest/ Docker-compose
 
 ## Demo
 

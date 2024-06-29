@@ -1,7 +1,7 @@
 import express from 'express'
 import { JourneyWithId, addMember, memberQuit, putJourney } from '../prisma-client'
 import { JourneyPublisher } from '../events/publishers/journey-created-publisher'
-import connectRedpanda from '../redpanda'
+import { redpanda } from '../common'
 
 
 export const journeyEditRouter = express.Router()
@@ -12,7 +12,7 @@ journeyEditRouter.put('/', async (req, res) => {
 
   const journey = await putJourney({ id, name, subtitle, picture, members })
 
-  const [producer,] = await connectRedpanda
+  const producer = redpanda.producer
   const journeyProducer = new JourneyPublisher(producer)
   await journeyProducer.send(journey.id, {
     action: 'modified',
@@ -31,7 +31,7 @@ journeyEditRouter.patch('/', async (req, res) => {
     memberId: quitingMemberId 
   })
 
-  const [producer,] = await connectRedpanda
+  const producer = redpanda.producer
   const journeyProducer = new JourneyPublisher(producer)
   await journeyProducer.send(journey.id, {
     action: 'modified',
@@ -48,7 +48,7 @@ journeyEditRouter.post('/', async (req, res) => {
   const members: { id: string }[] = req.body.members
   const journey = await addMember({ id, members })
 
-  const [producer,] = await connectRedpanda
+  const producer = redpanda.producer
   const journeyProducer = new JourneyPublisher(producer)
   await journeyProducer.send( journey.id, {
     action: 'modified',

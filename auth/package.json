@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/index.ts",
-    "test-in-docker-compose": "npx prisma migrate dev && jest --watchAll --no-cache"
+    "test-docker": "docker-compose up"
   },
   "keywords": [],
   "author": "",

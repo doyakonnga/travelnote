@@ -12,6 +12,9 @@ export const errorHandler = (
     console.log(err)
     switch (err) {
 
+      case 'email in use':
+        return res.status(400)
+          .json([{ field: 'email', message: 'The email is in use.' }])
       case 'email not exist':
         return res.status(400)
           .json([{ field: 'email', message: 'User with this email has not been signed.' }])

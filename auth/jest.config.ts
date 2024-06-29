@@ -7,7 +7,7 @@ const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   verbose: true,
-  setupFilesAfterEnv: ['./test/setup.test.ts'],
+  setupFilesAfterEnv: ['./test/setup-test.ts'],
   // collectCoverage: true,
   // collectCoverageFrom: [
   //   `${baseDir}/**/*.ts`

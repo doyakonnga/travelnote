@@ -31,4 +31,4 @@ class Redpanda {
   }
 }
 
-export const redpanda = new Redpanda
+export const redpanda = new Redpanda()

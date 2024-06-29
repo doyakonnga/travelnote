@@ -1,9 +1,9 @@
-import connectRedpanda from './redpanda'
 import { app } from './app'
+import { redpanda } from './common'
 
 const start = async () => {
   try {
-    const [producer, consumer] = await connectRedpanda
+    const [producer, consumer] = await redpanda.connect('auth')
     console.log('connected to redpanda')
     process.on('SIGINT', () => {
       producer.disconnect()

@@ -47,3 +47,4 @@ export abstract class Publisher<E extends Event> {
 }
 
 export * from './events'
+export * from './redpanda'

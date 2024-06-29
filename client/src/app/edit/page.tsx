@@ -1,5 +1,5 @@
 import JourneyCard from '@/components/journey-card-edit'
-import Renew from '@/components/renew'
+import { Renew } from '@/components/client-action'
 import axios from 'axios'
 import { cookies } from 'next/headers'
 
@@ -36,7 +36,7 @@ export default async function EditPage() {
 
   return (
     <main className="relative flex flex-wrap min-h-screen flex-col items-center justify-between p-24">
-      
+
       <Renew />
       <div className="absolute bg-black opacity-60 inset-0 z-0" />
       Content

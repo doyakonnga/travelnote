@@ -7,7 +7,6 @@ export const loginRouter = express.Router()
 
 loginRouter.post('/', async (req, res, next) => {
 
-  console.log('get login request')
   interface loginAttr { email: string, password: string }
   const { email, password }: loginAttr = req.body
   let user = await findUser({ email })
