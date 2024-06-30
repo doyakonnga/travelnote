@@ -1,6 +1,6 @@
 'use client'
 
-import { Dispatch, SetStateAction, useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { Close, RectangleList } from "./svg"
 import axios from "axios"
 import Image from "next/image"
@@ -13,16 +13,18 @@ const PhotoDetailModal = ({ setModalAction, photoString }: {
   photoString: string
 }) => {
   const { journeyId }: { journeyId: string } = useParams()
-  const [photo, setPhoto] = useState<Photo>(JSON.parse(photoString))
+  const photo: Photo = JSON.parse(photoString)
   const [user, setUser] = useState<Member | null>(null)
   const [consumption, setConsumption] = useState<Consumption | null>(null)
+  useEffect(() => {
+    axios.get(`/api/v1/user/${photo.userId}`)
+      .then(({ data }) => setUser(data.user)).catch(e => console.log(e))
+    if (photo.consumptionId)
+      axios.get(`/api/v1/consumption/${photo.consumptionId}?journeyId=${journeyId}`)
+        .then(({ data }) => setConsumption(data.consumption))
+        .catch(e => console.log(e))
+  }, [])
 
-  axios.get(`/api/v1/user/${photo.userId}`)
-    .then(({ data }) => setUser(data.user)).catch(e => console.log(e))
-  if (photo.consumptionId)
-    axios.get(`/api/v1/consumption/${photo.consumptionId}?journeyId=${journeyId}`)
-      .then(({ data }) => setConsumption(data.consumption))
-      .catch(e => console.log(e))
 
   return (
     <div className="fixed inset-0 m-0 z-20 bg-black bg-opacity-25 backdrop-blur-sm flex justify-center items-center">
