@@ -11,21 +11,21 @@ const ConsumptionPage = async ({ params }: {
 }) => {
 
   const Cookie = cookies().getAll().map((c) => `${c.name}=${c.value};`).join(' ')
+  const jId = params.journeyId
   let consumptions: Consumption[] = []
   let journey: { members: Member[] }
   let photos: Photo[] = []
-  let jId = params.journeyId
 
   try {
     const [{ data }, { data: data2 }] = await Promise.all([
-      axios.get(`${process.env.NGINX_HOST}/api/v1/consumption/?journeyId=${jId}`, {
+      axios.get(`${process.env.NGINX_HOST}/api/v1/consumptions/?journeyId=${jId}`, {
         headers: { Host: "travelnote.com", Cookie }
       }),
       axios.get(`${process.env.NGINX_HOST}/api/v1/journey/${jId}`, {
         headers: { Host: "travelnote.com", Cookie }
-      }).catch((e) => { 
+      }).catch((e) => {
         console.log(e)
-        return { data: { journey: { members: [] } } } 
+        return { data: { journey: { members: [] } } }
       })
     ])
     consumptions = (data.consumptions)
@@ -53,7 +53,7 @@ const ConsumptionPage = async ({ params }: {
   })
   return (
     <div className='mt-4'>
-      <UrlAlert/>
+      <UrlAlert />
       {consumpsAndDates.map((c) => {
         if (typeof c === 'string') return <h1 key={c} className="m-2">{c}</h1>
         return (

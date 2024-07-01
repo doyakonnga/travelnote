@@ -17,7 +17,7 @@ app.set('trust proxy', true)
 app.use(express.json())
 app.use(cookieSession({ 
   signed: false,
-  secure: process.env.NODE_ENV !== 'test'
+  // secure: process.env.NODE_ENV !== 'test'
  }), reqUser)
 
 app.use(`${v}/user/signup`, signupRouter)

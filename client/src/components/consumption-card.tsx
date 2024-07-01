@@ -36,7 +36,7 @@ const ConsumptionCard = ({ consumption, members }: {
     setEditedEx('')
     try {
       setReqState('loading')
-      await axios.patch(`/api/v1/expense/${ex.id}`, { isPaid: !ex.isPaid })
+      await axios.patch(`/api/v1/expenses/${ex.id}`, { isPaid: !ex.isPaid })
       setConsumpState((prev => {
         const exs = prev.expenses.map((e) => {
           if (e.id === ex.id)
@@ -172,7 +172,7 @@ const ConsumptionCard = ({ consumption, members }: {
               setReqState('loading')
               const { id, journeyId } = consumption
               const deletedConsumption = await axios
-                .delete(`/api/v1/consumption/${id}?journeyId=${journeyId}`)
+                .delete(`/api/v1/consumptions/${id}?journeyId=${journeyId}`)
               console.log('deleted: ', deletedConsumption)
               const randomId = randomBytes(4).toString('ascii')
               const message = 'The consumption has been deleted.'
@@ -180,7 +180,7 @@ const ConsumptionCard = ({ consumption, members }: {
                 result: 'success', id: randomId, message
               })
               router.replace(
-                `/journey/${consumption.journeyId}/consumption?id=${randomId}&message=${message}`
+                `/journey/${consumption.journeyId}/consumptions?id=${randomId}&message=${message}`
               )
             } catch (e) {
               console.log(e)

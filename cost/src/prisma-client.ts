@@ -66,7 +66,8 @@ export async function unpaidExpenses(journeyId: string) {
       consumption: {
         select: {
           payingUserId: true,
-          isForeign: true
+          isForeign: true,
+          rate: true
         }
       }
     }

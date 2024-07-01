@@ -20,9 +20,9 @@ app.use(
   reqUser,
 )
 
-app.use(`${v}/consumption`, requireInJourney, consumptionRouter)
-app.use(`${v}/expense`, expenseRouter)
-app.use(`${v}/balance`, requireInJourney, balanceRouter)
+app.use(`${v}/consumptions`, requireInJourney, consumptionRouter)
+app.use(`${v}/expenses`, expenseRouter)
+app.use(`${v}/balances`, requireInJourney, balanceRouter)
 app.all('*', (req, res) => { throw '404' })
 
 app.use(errorHandler)

@@ -14,26 +14,26 @@ const SelectionBar = () => {
       <ul className="flex items-center gap-2 text-sm font-medium">
         <li className="flex-1">
           <Link
-            href={`${basePath}/consumption`}
-            className={('consumption' === curPath) ? current: option}
+            href={`${basePath}/consumptions`}
+            className={('consumptions' === curPath) ? current: option}
           >
-            Consumption
+            Consumptions
           </Link>
         </li>
         <li className="flex-1">
           <Link
-            href={`${basePath}/expense`}
-            className={('expense' === curPath) ? current : option}
+            href={`${basePath}/expenses`}
+            className={('expenses' === curPath) ? current : option}
           >
-            Expense
+            Expenses
           </Link>
         </li>
         <li className="flex-1">
           <Link
-            href={`${basePath}/balance`}
-            className={('balance' === curPath) ? current : option}
+            href={`${basePath}/balances`}
+            className={('balances' === curPath) ? current : option}
           >
-            Balance
+            Balances
             {/* Notification number bubble */}
             {/* <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
               {" 8 "}
@@ -53,7 +53,7 @@ const SelectionBar = () => {
             href="#"
             className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
           >
-            API
+            Notification
           </Link>
         </li>
       </ul>

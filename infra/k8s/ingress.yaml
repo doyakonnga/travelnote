@@ -4,37 +4,37 @@ metadata:
   name: ingress
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/use-regex: 'true'
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   rules:
-  - host: travelnote.com
-    http:
-      paths:
-      - path: /api/v1/(user|journey)/?(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: auth-svc
-            port:
-              number: 3000
-      - path: /api/v1/(expense|consumption|balance)/?(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: cost-svc
-            port:
-              number: 3000
-      - path: /api/v1/(albums|photos)/?(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: photo-svc
-            port:
-              number: 3000
-      - path: /?(.*)
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: client-svc
-            port:
-              number: 3000
+    - host: travelnote.com
+      http:
+        paths:
+          - path: /api/v1/(user|journey)/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-svc
+                port:
+                  number: 3000
+          - path: /api/v1/(expenses|consumptions|balances)/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: cost-svc
+                port:
+                  number: 3000
+          - path: /api/v1/(albums|photos)/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: photo-svc
+                port:
+                  number: 3000
+          - path: /?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: client-svc
+                port:
+                  number: 3000

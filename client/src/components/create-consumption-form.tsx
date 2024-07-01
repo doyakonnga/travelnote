@@ -59,7 +59,7 @@ const CreateConsumptionForm = ({ journeyId, users }: {
     const rate = Number(formData.get('rate'))
     try {
       if (!total) throw new Error('No valid input amount')
-      await axios.post("/api/v1/consumption", {
+      await axios.post("/api/v1/consumptions", {
         journeyId,
         name,
         rate,
