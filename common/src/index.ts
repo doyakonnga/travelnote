@@ -1,5 +1,5 @@
 import { Consumer, EachMessagePayload, Producer } from "kafkajs"
-import { Topics, Event, JourneyEvent } from "./events"
+import { Topics, Event } from "./events"
 
 
 export abstract class Listener<E extends Event> {
@@ -62,5 +62,6 @@ export async function kafkaListen(
   })
 }
 
+export * from './middlewares'
 export * from './events'
 export * from './redpanda'

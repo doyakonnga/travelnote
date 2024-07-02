@@ -1,6 +1,6 @@
 
 import { Journey } from "@prisma/client";
-import { JourneyEvent, Listener, Topics } from "../../common";
+import { JourneyEvent, Listener, Topics } from "@dkprac/common";
 import { createAlbum, createJourney, modifyJourney } from "../../prisma-client";
 
 export class JourneyListener extends Listener<JourneyEvent> {

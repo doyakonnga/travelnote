@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { E } from "@dkprac/common";
 export const prisma = new PrismaClient()
 
 function catchingWrapper<T extends any[], U>(f: (...arg: T) => Promise<U>) {
@@ -8,7 +9,7 @@ function catchingWrapper<T extends any[], U>(f: (...arg: T) => Promise<U>) {
       return await f(...arg)
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2025') throw '404'
+        if (e.code === 'P2025') throw E[E['#404']]
       }
       throw e
     }
@@ -141,7 +142,7 @@ export const moveAllphotos = catchingWrapper(async (props: {
       name: props.targetName
     }
   })
-  if (!album) throw '404'
+  if (!album) throw E[E['#404']]
   return await prisma.photo.updateMany({
     where: {
       albumId: props.originId

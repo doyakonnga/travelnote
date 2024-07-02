@@ -1,9 +1,7 @@
 import express from 'express'
 import { createAlbum, deleteAlbumById, getAlbumById, journeyAlbumById, moveAllphotos, updateAlbum } from '../prisma-client'
 import { body, param } from 'express-validator'
-import { validation } from '../middlewares/validation-result'
-import { requireInJourney } from '../middlewares/require-in-journey'
-
+import { validation, requireInJourney, E } from '@dkprac/common'
 export const albumRouter = express.Router()
 
 albumRouter.get('/',
@@ -21,9 +19,9 @@ albumRouter.get('/:id',
     const id: string = req.params.id
     const { id: uId, journeyIds } = req.user
     const album = await getAlbumById(id)
-    if (!album) throw '404'
+    if (!album) throw E[E['#404']]
     if (!journeyIds.includes(album.journeyId))
-      throw '401'
+      throw E[E['#401']]
     return res.status(200).json({ album })
   })
 
@@ -33,7 +31,7 @@ albumRouter.post('/',
   body('name').isString(),
   validation,
   async (req, res) => {
-    if (!req.user?.id) throw '401'
+    if (!req.user?.id) throw E[E['#401']]
     const album = await createAlbum({
       name: req.body.name,
       journeyId: req.body.journeyId,

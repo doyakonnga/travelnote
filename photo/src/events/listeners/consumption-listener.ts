@@ -1,5 +1,5 @@
 
-import { ConsumptionEvent, Listener, Topics } from "../../common";
+import { ConsumptionEvent, Listener, Topics } from "@dkprac/common";
 import { createConsumption, deleteConsumptionById } from "../../prisma-client";
 
 

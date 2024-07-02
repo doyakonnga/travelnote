@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express"
 import { validationResult } from "express-validator"
+import { E } from "./errors"
 
 export const errorHandler = (
   err: string | Error,
@@ -7,44 +8,44 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  if (typeof err === 'string') {
+  if (typeof err === 'string' && Object.keys(E).includes(err)) {
     console.log('into errorHandlerMiddleware')
     console.log(err)
     switch (err) {
 
-      case 'email in use':
+      case E[E['email in use']]:
         return res.status(400)
           .json([{ field: 'email', message: 'The email is in use.' }])
-      case 'email not exist':
+      case E[E['email not exist']]:
         return res.status(400)
           .json([{ field: 'email', message: 'User with this email has not been signed.' }])
-      case 'password incorrect':
+      case E[E['password incorrect']]:
         return res.status(400)
           .json([{ field: 'password', message: 'Password Incorrect' }])
 
-      case 'Journey title required':
+      case E[E['Journey title required']]:
         return res.status(400)
           .json([{ field: 'title', message: 'Journey title required' }])
-      case 'scope not specified':
+      case E[E['scope not specified']]:
         return res.status(400)
           .json([{ field: 'query', message: 'scope not specified'}])
 
-      case 'journeyId param not provided':
+      case E[E['journeyId param not provided']]:
         return res.status(400)
           .json([{ field: 'journeyId', message: 'journeyId not provided in query or body' }])
-      case 'express-validator errors':
+      case E[E['express-validator errors']]:
         const result = validationResult(req).array().map((e) => {
           return { field: `${(e as any).location}.${(e as any).path}`, message: e.msg }
         })
         return res.status(400).json(result)
-      case 'not all users in the journey':
+      case E[E['not all users in the journey']]:
         return res.status(400)
           .json([{ field: 'expenses.userId', message: 'not all users are in the journey' }])
 
-      case '401':
+      case E[E['#401']]:
         return res.status(401)
           .json([{ field: 'user or journey', message: 'unauthorized' }])
-      case '404':
+      case E[E['#404']]:
         return res.status(404)
           .json([{ field: 'route', message: 'the route is undefined' }])
     }

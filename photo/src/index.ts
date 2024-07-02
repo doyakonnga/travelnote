@@ -1,12 +1,10 @@
 import express from 'express'
 import 'express-async-errors'
 import cookieSession from 'cookie-session'
-import { reqUser } from './middlewares/req-user'
-import { errorHandler } from './middlewares/error-handler'
 import { albumRouter } from './routes/album-router'
 import { photoRouter } from './routes/photo-router'
-import { redpanda, kafkaListen } from './common'
 import { JourneyListener, ConsumptionListener } from './events/listeners'
+import { reqUser, errorHandler, redpanda, kafkaListen, E } from '@dkprac/common'
 
 const app = express()
 
@@ -17,13 +15,14 @@ app.use(express.json())
 app.use(
   cookieSession({ signed: false }),
   reqUser, (req, res, next) => {
-    if (!req.user) throw '401'
-    return next() }
+    if (!req.user) throw E[E['#401']]
+    return next()
+  }
 )
 
 app.use(`${v}/albums`, albumRouter)
 app.use(`${v}/photos`, photoRouter)
-app.all('*', (req, res) => { throw '404' })
+app.all('*', (req, res) => { throw E[E['#404']] })
 
 app.use(errorHandler)
 

@@ -1,7 +1,7 @@
 import express from 'express'
 import { albumAccessible, albumPhotoById, consumptionPhotoById, createMultiplePhoto, createPhoto, deletePhotoById, journeyPhotoById, movePhotos, updatePhoto } from '../prisma-client'
 import { body, param, query } from 'express-validator'
-import { validation } from '../middlewares/validation-result'
+import { validation, E } from '@dkprac/common'
 
 export const photoRouter = express.Router()
 
@@ -15,9 +15,9 @@ photoRouter.get("/", async (req, res) => {
         : (typeof req.query.journeyId === 'string') ?
           await journeyPhotoById(req.query.journeyId)
           : null
-  if (!roughPhotos) throw 'scope not specified'
+  if (!roughPhotos) throw E[E['scope not specified']]
   if (roughPhotos[0] && !journeyIds.includes(roughPhotos[0].album.journeyId)) 
-    throw '401'
+    throw E[E['#401']]
   const photos = roughPhotos.map(p => {return {...p, editable: p.userId === uId}})
   return res.status(200).json({ photos })
 })
@@ -41,7 +41,7 @@ photoRouter.post('/',
       consumptionId: string
     } = req.body
     if (!await albumAccessible(data.albumId, req.user.journeyIds))
-      throw '404'
+      throw E[E['#404']]
     const photo = await createPhoto({
       url: data.url,
       description: data.description || undefined,
@@ -75,7 +75,7 @@ photoRouter.post('/multiple',
       urls: string[]
     } = req.body
     if (!await albumAccessible(albumId, req.user.journeyIds))
-      throw '404'
+      throw E[E['#404']]
     const { count } = await createMultiplePhoto({
       userId, albumId, urls
     })
