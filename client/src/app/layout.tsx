@@ -27,6 +27,7 @@ declare global {
   interface Member {
     id: string
     name: string
+    email: string
     avatar: string
   }
 
@@ -53,6 +54,7 @@ declare global {
     payingUserId: string
     journeyId: string
     createdAt: string
+    editable: boolean
     expenses: Expense[]
   }
 

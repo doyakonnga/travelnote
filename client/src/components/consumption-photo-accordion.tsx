@@ -211,16 +211,17 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
         </button>
       </h2>
       {/* expanded body */}
-      <div
-        id="accordion-color-body-1"
+      <div id="accordion-color-body-1"
         className={(!expanded ? "hidden " : " ") + "relative"}
       >
-        {(reqState === 'loading') &&
-          <Spinner />
-        }
+        {(reqState === 'loading') && <Spinner />}
+        {/* Carousel */}
         {!object[0] && (reqState !== 'loading') &&
           <div className="relative">
-            <Carousel photos={photos} />
+            {!photos.length ?
+              <h1 className="text-center p-2 m-4 text-white">No bing photo</h1> :
+              <Carousel photos={photos} />
+            }
             <label className="absolute bottom-3 right-3 cursor-pointer">
               <Add props={{}} />
               <input type="file" className="hidden" name="picture"
@@ -228,7 +229,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
               />
             </label>
           </div>}
-
+        {/* Upload file */}
         {object[1] && (reqState !== 'loading') && (
           <div className='flex flex-wrap justify-between relative'>
             <Image

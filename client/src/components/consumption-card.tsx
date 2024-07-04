@@ -11,6 +11,39 @@ import { randomBytes } from "crypto"
 import Spinner from "./spinner"
 import ConsumptionPhotoAccordion from "./consumption-photo-accordion"
 
+
+const editButton = (props: {}) => (<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={16}
+  height={16}
+  fill="currentColor"
+  id="2"
+  className="bi bi-pencil-square inline-block ml-2 mr-auto rounded-md hover:bg-gray-200 cursor-pointer"
+  viewBox="0 0 16 16"
+  {...props}
+>
+  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+  <path
+    fillRule="evenodd"
+    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
+  />
+</svg>)
+
+const deleteButton = (props: {}) => {
+  return (<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={16}
+    height={16}
+    fill="currentColor"
+    id="3"
+    className="bi bi-trash-fill inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
+    viewBox="0 0 16 16"
+    {...props}
+  >
+    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
+  </svg>)
+}
+
 type ReqState = null | 'loading' | {
   result: 'success' | 'failure'
   id: string
@@ -22,6 +55,8 @@ const ConsumptionCard = ({ consumption, members }: {
   members: Member[]
 }) => {
   const router = useRouter()
+  const { editable, isForeign } = consumption
+  const payingUser = members.find(m => m.id === consumption.payingUserId)
   // update expenses
   const [consumpState, setConsumpState] = useState<Consumption>(consumption)
   const [editedEx, setEditedEx] = useState('')
@@ -60,51 +95,32 @@ const ConsumptionCard = ({ consumption, members }: {
     }
   }
 
-  const editButton = (props: {}) => (<svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={16}
-    height={16}
-    fill="currentColor"
-    id="2"
-    className="bi bi-pencil-square inline-block ml-2 mr-auto rounded-md hover:bg-gray-200 cursor-pointer"
-    viewBox="0 0 16 16"
-    {...props}
-  >
-    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-    <path
-      fillRule="evenodd"
-      d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
-    />
-  </svg>)
-
-  const deleteButton = (props: {}) => {
-    return (<svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={16}
-      height={16}
-      fill="currentColor"
-      id="3"
-      className="bi bi-trash-fill inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
-      viewBox="0 0 16 16"
-      {...props}
-    >
-      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
-    </svg>)
-  }
 
   return (
-    <div className='flex flex-wrap space-y-2 bg-slate-600 border-slate-700 rounded-md p-4'
+    <div className={'flex flex-wrap space-y-2 border-slate-700 rounded-md p-4 '
+      + (isForeign ? 'bg-slate-700' : 'bg-slate-500')}
       id={consumption.id}>
-      <h1 className="w-full space-x-2 ml-2">
-        <span className="text-white">{consumpState.name}</span>
-        {editButton({
-          onClick: () => { setDisplayEditModal(true) }
-        })}
-        {deleteButton({
-          onClick: () => { setConfirmDeleteModel(true) }
-        })
+      <div className="flex flex-wrap justify-between w-full">
+        {/* consumption name and buttons */}
+        <h1 className="space-x-2 ml-2">
+          <span className="text-white">{consumpState.name}</span>
+          {editable && editButton({
+            onClick: () => { setDisplayEditModal(true) }
+          })}
+          {editable && deleteButton({
+            onClick: () => { setConfirmDeleteModel(true) }
+          })
+          }
+        </h1>
+        {/* isForeign and exchange rate */}
+        {isForeign && (
+          <div className='flex flex-col gap-1 text-slate-50 w-56'>
+            <h1>Foreign currency</h1>
+            <h2>Exchange rate: {consumption.rate || 'unset'}</h2>
+          </div>)
         }
-      </h1>
+      </div>
+      {/* expense list */}
       {(reqState === 'loading') ? <Spinner /> :
         consumpState.expenses.map((ex) => {
           const user = members.find((m) => m.id === ex.userId)
@@ -112,7 +128,7 @@ const ConsumptionCard = ({ consumption, members }: {
             // each expense
             <div key={ex.id} className={"w-8/12 min-w-64 flex rounded-md ml-auto mr-2 p-1 space-x-1 " + (ex.isPaid ? 'bg-teal-400' : 'bg-rose-400')}>
               {/* edit button */}
-              {(consumpState.payingUserId !== ex.userId) &&
+              {editable && (consumpState.payingUserId !== ex.userId) &&
                 editButton({
                   onClick: () => {
                     setEditedEx((prev) => (prev === ex.id) ? '' : ex.id)
@@ -135,11 +151,18 @@ const ConsumptionCard = ({ consumption, members }: {
               </div>
             </div>
           )
-        })}
-
-      {/* {editModalMsg &&
-        <Alert color="green" id={editModalId}>{editModalMsg}</Alert>
-      } */}
+        })
+      }
+      {/* Payed by */}
+      {reqState !== 'loading' &&
+        <div className="flex justify-end w-full text-slate-50 p-2 gap-2">
+          <span className="block ml-auto">Paid by: </span>
+          <div className="shrink-0 space-x-1">
+            <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={payingUser?.avatar || '/user.png'} alt="user avatar" />
+            <span>{(payingUser?.name || "user")}</span>
+          </div>
+        </div>
+      }
 
       {(typeof reqState === 'object') && (reqState) &&
         (reqState.result === 'success' ?

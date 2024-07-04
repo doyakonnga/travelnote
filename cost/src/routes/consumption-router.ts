@@ -13,10 +13,10 @@ consumptionRouter.get('/', async (req, res) => {
   const journeyId = req.query.journeyId as string
   const consumptions = await journeyConsumptions(journeyId)
   res.status(200).json({ 
-    consumptions: consumptions.map(c => {return { 
+    consumptions: consumptions.map(c => ({ 
       ...c, 
       editable: c.payingUserId === req.user.id
-    }}) 
+    })) 
   })
 })
 

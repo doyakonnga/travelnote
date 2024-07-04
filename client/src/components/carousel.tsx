@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useState } from "react"
 import { AngleLeft, AngleRight, Folder } from "./svg"
+import Spinner from "./spinner"
 // import { FaArrowCircleRight, FaArrowCircleLeft } from "react-icons/fa"
 // import { BiPhotoAlbum } from "react-icons/bi";
 
@@ -20,7 +21,7 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
           style={{ transform: `translateX(${current * -100}%)` }}
         >
           {photos.map((p) =>
-            <div key={'img' + p.id}  className="relative min-h-[32rem] min-w-full">
+            <div key={'img' + p.id} className="relative min-h-[32rem] min-w-full">
               <Image
                 src={p.url}
                 alt={p.description || 'user uploaded picture'}
@@ -32,21 +33,17 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
         {/* left and right buttons */}
         <div className="absolute left-5 inset-y-0 flex justify-between items-center text-white text-3xl">
           <button type='button'
-            onClick={() => {
-              setCurrent((prev) => (prev - 1 + l) % l)
-            }}
+            onClick={() => setCurrent((prev) => (prev - 1 + l) % l) }
           >
-            <AngleLeft/>
+            <AngleLeft />
             {/* <FaArrowCircleLeft /> */}
           </button>
         </div>
         <div className="absolute right-5 inset-y-0 flex justify-between items-center text-white text-3xl">
           <button type='button'
-            onClick={() => {
-              setCurrent((prev) => (prev + 1) % l)
-            }}
+            onClick={() => setCurrent((prev) => (prev + 1) % l) }
           >
-            <AngleRight/>
+            <AngleRight />
             {/* <FaArrowCircleRight /> */}
           </button>
         </div>
@@ -55,7 +52,7 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
           {photos.map((p, i) => <div
             key={'dot' + p.id}
             className={"rounded-full w-4 h-4 cursor-pointer " + (i === current ? "bg-white" : "bg-gray-400")}
-            onClick={() => setCurrent(i)}
+            onClick={() => setCurrent(i) }
           ></div>)}
         </div>
       </div>
@@ -64,7 +61,7 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
           <div className="flex items-center justify-center">
             <Link className="flex items-center gap-1 text-sky-300"
               href={`/journey/${jId}/albums/${photos[current].albumId}`}>
-              <Folder/>
+              <Folder />
               {/* <BiPhotoAlbum /> */}
               <p>{photos[current].album.name}</p>
             </Link>
