@@ -25,6 +25,7 @@ export const MultipleFileUploadingModal = ({ reset, reqState, setReqState }: {
   const [modal, setModal] = useState(false)
   const [files, setFiles] = useState<{ file: File, objectUrl: string }[]>([])
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    files.forEach(f => URL.revokeObjectURL(f.objectUrl))
     if (!e.target.files) return setFiles([])
     const arr: { file: File, objectUrl: string }[] = []
     Array.from(e.target.files).forEach((f) =>

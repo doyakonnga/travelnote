@@ -32,6 +32,13 @@ export async function userById(id: string) {
   return await prisma.user.findUnique({where: {id}})
 }
 
+export async function userWithJourneyById(id: string) {
+  return await prisma.user.findUnique({ 
+    where: { id },
+    include: { journeys: true }
+  })
+}
+
 export async function allUser() {
   return await prisma.user.findMany({
     select: {
@@ -42,6 +49,19 @@ export async function allUser() {
     }
   })
 }
+
+export async function updateUser(props: {
+  id: string
+  name?: string
+  avatar?: string
+}){
+  const { id, name, avatar } = props
+  return await prisma.user.update({
+    where: { id },
+    data: { name, avatar }
+  })
+}
+
 
 export interface NewJourney {
   name: string

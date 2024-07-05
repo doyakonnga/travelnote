@@ -2,9 +2,10 @@
 
 import axios from "axios"
 import Image from "next/image"
-import { useState } from "react"
+import { ChangeEvent, useState } from "react"
 import Alert from './alert'
 import ConfirmModal from "./confirm-modal"
+import { OldBin, OldEditing, OldInviting } from "./svg"
 
 interface Props {
   journeyId: string
@@ -18,17 +19,36 @@ interface User {
   email: string
   avatar: string
 }
+type Option = 0 | 1 | 2 | 3
+type Uploaded = { file: File, objectUrl: string } | null
 const JourneyCard = (props: Props) => {
-  const { journeyId, title, subtitle, picture } = props
-  const [option, setOption] = useState(0)
+  const { journeyId: id, title, subtitle, picture } = props
+  // 1: inviting, 2: editing, 3: quiting
+  const [option, setOption] = useState<Option>(0)
+  // Option1, Inviting
   const [keyword, setKeyword] = useState('')
   const [foundUser, setFoundUser] = useState<User | null>(null)
+  // Option 2, Editing
+  const [query, setQuery] = useState({ id, title, subtitle, picture })
+  const [uploaded, setUploaded] = useState<Uploaded>(null)
+
   const [confirmModal, setConfirmModal] = useState('')
   const [reqState, setReqState] = useState({ result: '', message: '' })
   const [loading, setLoading] = useState(false)
-  const changeOption = (n: number) => {
-    if (option === n) return setOption(0)
-    return setOption(n)
+  const changeOption = (n: Option) => {
+    if (option === 2) {
+      if (uploaded?.objectUrl)
+        URL.revokeObjectURL(uploaded.objectUrl)
+      setUploaded(null)
+      setQuery({ id, title, subtitle, picture })
+    }
+    setOption(p => (n === p) ? 0 : n)
+  }
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (uploaded) URL.revokeObjectURL(uploaded.objectUrl)
+    const file = e.target.files?.[0];
+    if (!file) setUploaded(null)
+    else setUploaded({ file, objectUrl: URL.createObjectURL(file) })
   }
   const handleConfirm = async () => {
     if (option === 1) {
@@ -36,14 +56,14 @@ const JourneyCard = (props: Props) => {
         setLoading(true)
         if (!foundUser) throw new Error('user not found')
         await axios.post('/api/v1/journey/edit', {
-          id: journeyId,
+          id,
           members: [{ id: foundUser.id }]
         })
         setKeyword('')
         setFoundUser(null)
         setReqState({
           result: 'success',
-          message: 'The user has been added to the journey group.'
+          message: 'The user has been invited to the journey group.'
         })
       } catch (e) {
         console.log(e)
@@ -55,10 +75,10 @@ const JourneyCard = (props: Props) => {
         setConfirmModal('')
         setLoading(false)
       }
-    } else if (option === 2) {
+    } else if (option === 3) {
       try {
         await axios.patch('/api/v1/journey/edit', {
-          id: journeyId,
+          id,
           quitingMemberId: ''
         })
       } catch (e) { console.log(e) }
@@ -66,83 +86,73 @@ const JourneyCard = (props: Props) => {
   }
 
   return (
-    <div key={journeyId} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto z-10">
-      <div className="bg-white p-6 rounded-lg flex flex-wrap">
-        <Image className="h-72  rounded w-full object-cover object-center mb-6" src={picture || 'https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} alt="journey picture" width={720} height={400} />
-        <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{title}</h1>
+    <div key={id} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto z-10">
+      <div className="bg-white p-6 rounded-lg grid grid-cols-2">
+        {/* Picture */}
+        {option === 2 ?
+          <label className="col-span-2 cursor-pointer" htmlFor="file">
+            <Image className="h-72 rounded w-full object-cover object-center mb-6"
+              src={uploaded?.objectUrl || query.picture || '/landscape.jpg'}
+              alt="journey picture" width={720} height={400} />
+            <input id="file" type="file" hidden onChange={handleChange}/>
+          </label>
+          :
+          <Image className="h-72 col-span-2 rounded w-full object-cover object-center mb-6"
+            src={query.picture || '/landscape.jpg'}
+            alt="journey picture" width={720} height={400} />
+        }
+        {/* Title */}
+        {option === 2 ?
+          <div className="mb-4 inline-block">
+            <label htmlFor="title">Title: </label>
+            <input id="title" type="text" className="border-2 border-gray-300 bg-white h-10 mx-2 px-3 rounded-lg text-sm focus:outline-none"
+              value={query.title || ''}
+              onChange={e => setQuery(p => ({ ...p, title: e.target.value }))} />
+          </div> :
+          <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{query.title}</h1>
+        }
+        {/* Buttons */}
         <div className="inline-block ml-auto">
-          <svg
-            fill="#000000"
-            height="18px"
-            width="18px"
-            version="1.1"
-            id="1"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlnsXlink="http://www.w3.org/1999/xlink"
-            viewBox="0 0 328 328"
-            xmlSpace="preserve"
-            className="inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
-            onClick={() => { changeOption(1) }}
-          >
-            <g id="XMLID_455_">
-              <path
-                id="XMLID_458_"
-                d="M15,286.75h125.596c19.246,24.348,49.031,40,82.404,40c57.897,0,105-47.103,105-105s-47.103-105-105-105
-		c-34.488,0-65.145,16.716-84.298,42.47c-7.763-1.628-15.694-2.47-23.702-2.47c-63.411,0-115,51.589-115,115
-		C0,280.034,6.716,286.75,15,286.75z M223,146.75c41.355,0,75,33.645,75,75s-33.645,75-75,75s-75-33.645-75-75
-		S181.645,146.75,223,146.75z"
-              />
-              <path
-                id="XMLID_461_"
-                d="M115,1.25c-34.602,0-62.751,28.15-62.751,62.751S80.398,126.75,115,126.75
-		c34.601,0,62.75-28.148,62.75-62.749S149.601,1.25,115,1.25z"
-              />
-              <path
-                id="XMLID_462_"
-                d="M193,236.75h15v15c0,8.284,6.716,15,15,15s15-6.716,15-15v-15h15c8.284,0,15-6.716,15-15s-6.716-15-15-15
-		h-15v-15c0-8.284-6.716-15-15-15s-15,6.716-15,15v15h-15c-8.284,0-15,6.716-15,15S184.716,236.75,193,236.75z"
-              />
-            </g>
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            id="2"
-            className="bi bi-pencil-square inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
-            viewBox="0 0 16 16"
-            onClick={() => { changeOption(2) }}
-          >
-            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-            <path
-              fillRule="evenodd"
-              d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
-            />
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            id="3"
-            className="bi bi-trash-fill inline-block m-2 rounded-md hover:bg-gray-200 cursor-pointer"
-            viewBox="0 0 16 16"
-            onClick={() => {
-              changeOption(3)
-              setConfirmModal('Are you sure you want to quit the journey? Please note that if you are last user, all of data in this group will be lost permanently.')
-            }}
-          >
-            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
-          </svg>
-
+          <OldInviting selected={option === 1} onClick={() => changeOption(1)} />
+          <OldEditing selected={option === 2} onClick={() => changeOption(2)} />
+          <OldBin onClick={() => {
+            changeOption(3)
+            setConfirmModal('Are you sure you want to quit the journey? Please note that if you are last user, all of data in this group will be lost permanently.')
+          }} />
         </div>
-        <p className="leading-relaxed text-base">{subtitle}</p>
+        {/* Subtitle */}
+        {option === 2 ?
+          <div className="mb-4 inline-block">
+            <label htmlFor="subtitle">Subtitle: </label>
+            <input id="subtitle" className="border-2 border-gray-300 bg-white h-10 mx-2 px-3 rounded-lg text-sm focus:outline-none" type="text" value={query.subtitle || ''}
+              onChange={e => setQuery(p => ({ ...p, subtitle: e.target.value }))} />
+          </div> :
+          <p className="leading-relaxed text-base">{query.subtitle}</p>
+        }
+        {/* Save and Cancel */}
+        {option === 2 &&
+          <div className="flex justify-end gap-5">
+            <button type="button" className="my-3 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200"
+              onClick={() => { }}
+            >
+              Save
+            </button>
+            <button type="button" className="my-3 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
+              onClick={() => {
+                setOption(0)
+                setQuery({ id, title, subtitle, picture })
+                setUploaded(null)
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        }
 
-        {/* adding user */}
+        {/* Adding user */}
         {/* search bar */}
         {(option === 1) &&
-          <div className="w-full">
+          <div className="w-full col-span-2">
             <div className="pt-2 text-gray-600 w-fit relative">
               <input
                 className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
