@@ -29,11 +29,11 @@ export async function findUser(attr: { email: string }) {
 }
 
 export async function userById(id: string) {
-  return await prisma.user.findUnique({where: {id}})
+  return await prisma.user.findUnique({ where: { id } })
 }
 
 export async function userWithJourneyById(id: string) {
-  return await prisma.user.findUnique({ 
+  return await prisma.user.findUnique({
     where: { id },
     include: { journeys: true }
   })
@@ -54,7 +54,7 @@ export async function updateUser(props: {
   id: string
   name?: string
   avatar?: string
-}){
+}) {
   const { id, name, avatar } = props
   return await prisma.user.update({
     where: { id },
@@ -72,9 +72,9 @@ export interface NewJourney {
   }[]
 }
 
-export interface JourneyWithId extends NewJourney {
-  id: string
-}
+export type JourneyWithId =
+  Partial<NewJourney> &
+  { id: string }
 
 export async function userJourneys(userId: string) {
   return await prisma.journey.findMany({
@@ -115,7 +115,7 @@ export async function createJourney(attr: NewJourney) {
   })
 }
 
-export async function putJourney(attr: JourneyWithId) {
+export async function patchJourney(attr: JourneyWithId) {
   const { id, name, subtitle, picture, members } = attr
   const journey = await prisma.journey.update({
     where: { id },
@@ -123,10 +123,10 @@ export async function putJourney(attr: JourneyWithId) {
       name,
       subtitle,
       picture,
-      members: {
+      members: members? {
         set: [],
         connect: members
-      }
+      } : undefined
     },
     include: {
       members: {

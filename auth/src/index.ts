@@ -1,5 +1,5 @@
 import { app } from './app'
-import { redpanda } from './common'
+import { redpanda } from '@dkprac/common'
 
 const start = async () => {
   try {

@@ -2,6 +2,7 @@ import express from 'express'
 import { allUser, findUser, updateUser, userById, userJourneys, userWithJourneyById } from '../prisma-client'
 import jsonwebtoken from 'jsonwebtoken'
 import { body, param } from 'express-validator'
+import { validation } from '@dkprac/common'
 
 export const userRouter = express.Router()
 
@@ -15,9 +16,7 @@ userRouter.get('/', async (req, res) => {
 })
 
 userRouter.get('/currentuser', (req, res) => {
-  console.log('currentUser: ', req.user || 'null')
-  if (!req.user) return res.json({ user: null })
-  return res.status(200).json({ user: req.user })
+  return res.status(200).json({ user: req.user || null })
 })
 
 userRouter.get('/renewtoken', async (req, res) => {
@@ -43,6 +42,7 @@ userRouter.get('/renewtoken', async (req, res) => {
 
 userRouter.get('/:id',
   param('id').isString(),
+  validation,
   async (req, res) => {
     const user = await userById(req.params!.id)
     return res.status(200).json({ user })
@@ -50,6 +50,7 @@ userRouter.get('/:id',
 
 userRouter.patch('/:id',
   param('id').isString(),
+  validation,
   async (req, res) => {
     const user = await updateUser({
       id: req.params!.id,

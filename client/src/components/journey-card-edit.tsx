@@ -50,13 +50,16 @@ const JourneyCard = (props: Props) => {
     if (!file) setUploaded(null)
     else setUploaded({ file, objectUrl: URL.createObjectURL(file) })
   }
+  const handleSave = async () => {
+    axios.patch('/api/v1/journey', query)
+  }
   const handleConfirm = async () => {
     if (option === 1) {
       try {
         setLoading(true)
         if (!foundUser) throw new Error('user not found')
-        await axios.post('/api/v1/journey/edit', {
-          id,
+        await axios.post('/api/v1/journey/members', {
+          journeyId: id,
           members: [{ id: foundUser.id }]
         })
         setKeyword('')
@@ -77,8 +80,8 @@ const JourneyCard = (props: Props) => {
       }
     } else if (option === 3) {
       try {
-        await axios.patch('/api/v1/journey/edit', {
-          id,
+        await axios.patch('/api/v1/journey/members', {
+          journeyId: id,
           quitingMemberId: ''
         })
       } catch (e) { console.log(e) }
@@ -111,7 +114,7 @@ const JourneyCard = (props: Props) => {
           </div> :
           <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{query.title}</h1>
         }
-        {/* Buttons */}
+        {/* Option Selection Buttons */}
         <div className="inline-block ml-auto">
           <OldInviting selected={option === 1} onClick={() => changeOption(1)} />
           <OldEditing selected={option === 2} onClick={() => changeOption(2)} />
@@ -133,7 +136,7 @@ const JourneyCard = (props: Props) => {
         {option === 2 &&
           <div className="flex justify-end gap-5">
             <button type="button" className="my-3 flex justify-center bg-gray-800 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-200"
-              onClick={() => { }}
+              onClick={handleSave}
             >
               Save
             </button>

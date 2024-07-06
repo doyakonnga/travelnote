@@ -2,6 +2,7 @@ import express from 'express'
 import jsonwebtoken from 'jsonwebtoken'
 import { scrypt } from 'crypto'
 import { findUser } from '../prisma-client'
+import { E } from '@dkprac/common'
 
 export const loginRouter = express.Router()
 
@@ -10,7 +11,8 @@ loginRouter.post('/', async (req, res, next) => {
   interface loginAttr { email: string, password: string }
   const { email, password }: loginAttr = req.body
   let user = await findUser({ email })
-  if (!user) throw 'email not exist'
+  if (!user)
+    throw E[E['email not exist']]
   const [hashed, salt] = user.password.split('.')
 
   const asyncScrypt = (): Promise<Buffer> => new Promise((resolve, reject) => {

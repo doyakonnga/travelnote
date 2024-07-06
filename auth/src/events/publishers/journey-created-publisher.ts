@@ -1,4 +1,4 @@
-import { Publisher, JourneyEvent, Topics } from "../../common";
+import { Publisher, JourneyEvent, Topics } from "@dkprac/common";
 
 
 export class JourneyPublisher extends Publisher<JourneyEvent> {

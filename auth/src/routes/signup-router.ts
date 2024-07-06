@@ -2,7 +2,7 @@ import express from 'express'
 import { scrypt, randomBytes } from 'crypto'
 import { createUser, findUser } from '../prisma-client'
 import { body } from 'express-validator'
-import { validation } from '../middlewares/validation-result'
+import { validation } from '@dkprac/common'
 
 export const signupRouter = express.Router()
 
