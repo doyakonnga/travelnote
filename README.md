@@ -35,27 +35,27 @@ Travelnote is an application facilitating fellow travellers to track their expen
 ## Feature
 
 ### User authentication
-- Signing up/ logging in with unique email and valid password
-- Signing up/ logging in with google account utilizing OAuth2.0
-- Editing user avatar, with default setting of google account avatar if existing
+- Signing up/ logging in with a unique email and a valid password
+- Signing up/ logging in with Google account via OAuth2.0
+- Editing user profile avatar, which defaults Google account avatar if existing
 
 ### Co-editable journeys
-- Creating a co-editable journey with customized cover pictures uploaded by user
-- Searching users and adding members (authorization) into a journey by Registered email
+- Creating a co-editable journey with a customized cover picture uploaded by members
+- Searching users with registered emails and adding members into a journey 
 
 ### Co-editable consumption records
 - Adding consumptions shared by and only accessible to the journey members
-- Editing/ deleting a consumption only by the paying user
+- Editing/ deleting a consumption by the owing (paying) member
 - Reviewing personal expenses and arrears
-- Calculating balances including foreign currencies based on user-configured exchange rate 
-- Viewing photos binded to a consumption/ redirecting to the album
+- Calculating balances optionally including foreign currencies, which is based on user-configured exchange rate 
+- Viewing photos bound to a consumption and redirecting to the album page
 
 ### Sharing photos
 - Uploading photos accessible only to the journey members
-- Optionally binding photos to specified consumptions
+- Optionally binding photos to a specified consumption
 - Editing descriptions of/ deleting a photo only by the uploading user
 - Creating/deleting albums to classify member-shared photos
-- Viewing/ redirecting to the binded consumption of a photo
+- Viewing/ redirecting to the bound consumption of a photo
 
 ### Notifications
 - Receiving notification of a member's creating/ editing a consumption
@@ -67,6 +67,8 @@ Travelnote is an application facilitating fellow travellers to track their expen
 **Client:** React.js/ Next.js/ Typescript
 
 **Server:** Node.js/ Express.js/ Typescript/ Prisma
+
+**Event Broker:** Kafkajs/ Redpanda cloud
 
 **Containerization:** Docker-desktop/ Kubernetes/ Skaffold
 

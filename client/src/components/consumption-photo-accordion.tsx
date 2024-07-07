@@ -232,12 +232,14 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
         {/* Upload file */}
         {object[1] && (reqState !== 'loading') && (
           <div className='flex flex-wrap justify-between relative'>
-            <Image
-              src={object[1]}
-              alt='selected image'
-              width={500}
-              height={500}
-            />
+            <div className="m-auto">
+              <Image
+                src={object[1]}
+                alt='selected image'
+                width={500}
+                height={500}
+              />
+            </div>
             {/* absolute close button */}
             <button type="button" className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 absolute right-0 top-0"
               onClick={handleFileCancel}
@@ -246,18 +248,19 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <form className="flex-col justify-end items-end space-2">
+            {/* Form */}
+            <form className="flex flex-col justify-end items-end space-2 m-auto">
               <AlbumSelector
                 selectedAlbum={selectedAlbum}
                 setSelectedAlbum={setSelectedAlbum}
               />
-              <textarea name="description" id="description"
+              <textarea name="description" id="description" className="my-2"
                 value={description}
                 onChange={(e) => { setDescription(e.target.value) }}
               />
               <button
                 type="submit"
-                className="my-5 w-full flex justify-center bg-gray-700 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 transition-colors duration-100"
+                className="my-3 w-full flex justify-center bg-gray-700 text-white p-2 rounded-md tracking-wide hover:bg-black focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 transition-colors duration-100"
                 onClick={handleSubmit}
               >
                 Post

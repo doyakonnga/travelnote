@@ -44,16 +44,22 @@ journeyRouter.post('/', async (req, res) => {
   return res.status(200).json(journey)
 })
 
+const equelNullorisString = (field: any) => {
+  if (field == null || typeof field === 'string')
+    return true
+  throw new Error('must be null, undefined or string')
+}
 const isUndefinedOrString = (field: any) => {
   if (field === undefined || typeof field === 'string')
     return true
-  throw new Error('must be undefined or string')
+  throw new Error('must be null, undefined or string')
 }
 
 journeyRouter.patch('/:id',
   param('id').isString(),
-  ...['name', 'subtitle', 'picture']
-    .map(field => body(field).custom(isUndefinedOrString)),
+  body('name').custom(isUndefinedOrString),
+  ...['subtitle', 'picture'].map(field => 
+    body(field).custom(equelNullorisString)),
   validation,
   async (req, res) => {
     const { id } = req.params

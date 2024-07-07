@@ -6,9 +6,13 @@ import { ChangeEvent, useState } from "react"
 import Alert from './alert'
 import ConfirmModal from "./confirm-modal"
 import { OldBin, OldEditing, OldInviting } from "./svg"
+import { randomBytes } from "crypto"
+import Spinner from "./spinner"
+import { uploadToS3 } from "./client-action"
+import { deleteFromS3 } from "./actions"
 
 interface Props {
-  journeyId: string
+  id: string
   title: string
   subtitle: string | null
   picture: string | null
@@ -21,8 +25,10 @@ interface User {
 }
 type Option = 0 | 1 | 2 | 3
 type Uploaded = { file: File, objectUrl: string } | null
+const randomId = () => randomBytes(4).toString('ascii')
+
 const JourneyCard = (props: Props) => {
-  const { journeyId: id, title, subtitle, picture } = props
+  const { id, title, subtitle, picture } = props
   // 1: inviting, 2: editing, 3: quiting
   const [option, setOption] = useState<Option>(0)
   // Option1, Inviting
@@ -33,16 +39,21 @@ const JourneyCard = (props: Props) => {
   const [uploaded, setUploaded] = useState<Uploaded>(null)
 
   const [confirmModal, setConfirmModal] = useState('')
-  const [reqState, setReqState] = useState({ result: '', message: '' })
+  const [reqState, setReqState] = useState({ id: '', result: '', message: '' })
   const [loading, setLoading] = useState(false)
   const changeOption = (n: Option) => {
-    if (option === 2) {
-      if (uploaded?.objectUrl)
-        URL.revokeObjectURL(uploaded.objectUrl)
-      setUploaded(null)
-      setQuery({ id, title, subtitle, picture })
-    }
+    if (option === 2) handleCancel()
     setOption(p => (n === p) ? 0 : n)
+  }
+  const handleError = (e: any) => {
+    console.log(e)
+    const temp = { result: 'err', id: randomId() }
+    if (axios.isAxiosError(e))
+      setReqState({ ...temp, message: JSON.stringify(e.response?.data) })
+    else if (e instanceof Error)
+      setReqState({ ...temp, message: e.message })
+    else
+      setReqState({ ...temp, message: 'uncaught errors, try again later' })
   }
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (uploaded) URL.revokeObjectURL(uploaded.objectUrl)
@@ -50,8 +61,37 @@ const JourneyCard = (props: Props) => {
     if (!file) setUploaded(null)
     else setUploaded({ file, objectUrl: URL.createObjectURL(file) })
   }
+  const handleCancel = () => {
+    if (uploaded?.objectUrl)
+      URL.revokeObjectURL(uploaded.objectUrl)
+    setUploaded(null)
+    setQuery({ id, title, subtitle, picture })
+  }
   const handleSave = async () => {
-    axios.patch('/api/v1/journey', query)
+    try {
+      if (!query.title)
+        throw new Error('Please input valid title.')
+      setLoading(true)
+      let s3Url: string | undefined = undefined
+      if (uploaded)
+        s3Url = await uploadToS3(uploaded.file)
+      const { data } = await axios.patch(
+        `/api/v1/journey/${query.id}`, { ...query, picture: s3Url})
+      const { id, name, subtitle, picture }: Props & { name: string } = data.journey
+      deleteFromS3(query.picture || '')
+      setQuery({ id, title: name, subtitle, picture })
+      setOption(0)
+      if (uploaded?.objectUrl)
+        URL.revokeObjectURL(uploaded.objectUrl)
+      setUploaded(null)
+      setReqState({
+        id: randomId(),
+        result: 'ok',
+        message: 'Changes has been saved.'
+      })
+    } catch (e) {
+      handleError(e)
+    } finally { setLoading(false) }
   }
   const handleConfirm = async () => {
     if (option === 1) {
@@ -65,15 +105,12 @@ const JourneyCard = (props: Props) => {
         setKeyword('')
         setFoundUser(null)
         setReqState({
-          result: 'success',
-          message: 'The user has been invited to the journey group.'
+          id: randomId(),
+          result: 'ok',
+          message: 'The user has been invited to the journey.'
         })
       } catch (e) {
-        console.log(e)
-        setReqState({
-          result: 'failure',
-          message: 'Failure; please try again later.'
-        })
+        handleError(e)
       } finally {
         setConfirmModal('')
         setLoading(false)
@@ -92,19 +129,20 @@ const JourneyCard = (props: Props) => {
     <div key={id} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto z-10">
       <div className="bg-white p-6 rounded-lg grid grid-cols-2">
         {/* Picture */}
-        {option === 2 ?
-          <label className="col-span-2 cursor-pointer" htmlFor="file">
-            <Image className="h-72 rounded w-full object-cover object-center mb-6"
-              src={uploaded?.objectUrl || query.picture || '/landscape.jpg'}
+        {loading ? <Spinner /> :
+          option === 2 ?
+            <label className="col-span-2 cursor-pointer" htmlFor="file">
+              <Image className="h-72 rounded w-full object-cover object-center mb-6"
+                src={uploaded?.objectUrl || query.picture || '/landscape.jpg'}
+                alt="journey picture" width={720} height={400} />
+              <input id="file" type="file" hidden onChange={handleChange} />
+            </label>
+            :
+            <Image className="h-72 col-span-2 rounded w-full object-cover object-center mb-6"
+              src={query.picture || '/landscape.jpg'}
               alt="journey picture" width={720} height={400} />
-            <input id="file" type="file" hidden onChange={handleChange}/>
-          </label>
-          :
-          <Image className="h-72 col-span-2 rounded w-full object-cover object-center mb-6"
-            src={query.picture || '/landscape.jpg'}
-            alt="journey picture" width={720} height={400} />
         }
-        {/* Title */}
+        {/* Title(Name) */}
         {option === 2 ?
           <div className="mb-4 inline-block">
             <label htmlFor="title">Title: </label>
@@ -142,9 +180,8 @@ const JourneyCard = (props: Props) => {
             </button>
             <button type="button" className="my-3 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
               onClick={() => {
+                handleCancel()
                 setOption(0)
-                setQuery({ id, title, subtitle, picture })
-                setUploaded(null)
               }}
             >
               Cancel
@@ -221,10 +258,10 @@ const JourneyCard = (props: Props) => {
         }
 
       </div>
-      {(reqState.result === 'success') &&
-        <Alert color="green" id=''>{reqState.message}</Alert>}
-      {(reqState.result === 'failure') &&
-        <Alert color="red" id=''>{reqState.message}</Alert>}
+      {(reqState.result === 'ok') &&
+        <Alert color="green" id={reqState.id}>{reqState.message}</Alert>}
+      {(reqState.result === 'err') &&
+        <Alert color="red" id={reqState.id}>{reqState.message}</Alert>}
     </div>
   )
 }

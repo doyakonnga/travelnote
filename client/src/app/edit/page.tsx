@@ -26,7 +26,7 @@ export default async function EditPage() {
     })
     list = data.map((j) => <JourneyCard
       key={j.id}
-      journeyId={j.id}
+      id={j.id}
       title={j.name}
       subtitle={j.subtitle}
       picture={j.picture}

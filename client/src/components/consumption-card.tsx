@@ -114,9 +114,9 @@ const ConsumptionCard = ({ consumption, members }: {
         </h1>
         {/* isForeign and exchange rate */}
         {isForeign && (
-          <div className='flex flex-col gap-1 text-slate-50 w-56'>
+          <div className='flex flex-col gap-1 text-slate-50 text-end my-0.5 mx-3'>
             <h1>Foreign currency</h1>
-            <h2>Exchange rate: {consumption.rate || 'unset'}</h2>
+            <h2>Exchange rate: {consumpState.rate || 'unset'}</h2>
           </div>)
         }
       </div>

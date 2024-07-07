@@ -13,13 +13,14 @@ import { Add, FilePen, FileImage, Close } from "./svg"
 import Image from "next/image"
 import { uploadToS3 } from "./client-action"
 
-const InputModal = ({ text, loading, handleOk, handleCancel }: {
+const InputModal = ({ text, loading, handleOk, handleCancel, defaultValue }: {
   text: string
   loading: boolean
   handleOk: (input: string) => void
   handleCancel: () => void
+  defaultValue?: string
 }) => {
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(defaultValue || '')
 
   return (
     <div className="fixed inset-0 m-0 z-20 bg-black bg-opacity-25 backdrop-blur-sm flex justify-center items-center">
@@ -158,7 +159,7 @@ export const EditingAlbumModal = ({ albums }: { albums: Album[] }) => {
                 onClick={() => {
                   setModalContent({
                     action: 'rename',
-                    text: `New name of the album "${selectedAlbum.name}": `
+                    text: "New name of the album: "
                   })
                 }}
               >
@@ -179,6 +180,7 @@ export const EditingAlbumModal = ({ albums }: { albums: Album[] }) => {
       {modalContent && modalContent.action === 'rename' &&
         <InputModal
           text={modalContent.text}
+          defaultValue={selectedAlbum?.name}
           loading={loading}
           handleOk={async (input: string) => {
             try {
