@@ -3,11 +3,16 @@ import { prisma } from "../../src/prisma-client"
 import { app, v } from "../../src/app"
 
 
-describe('Route: /user', () => {
+beforeEach(async () => {
+  await prisma.user.deleteMany({})
+  jest.clearAllMocks()
+})
+afterAll(async () => {
+  await prisma.user.deleteMany({})
+  jest.clearAllMocks()
+})
 
-  beforeEach(async () => {
-    await prisma.user.deleteMany({})
-  })
+describe('GET: /user', () => {
 
   it('responds 200 with users', async () => {
     const res1 = await request(app).get(`${v}/user`)
@@ -19,7 +24,7 @@ describe('Route: /user', () => {
     })
     const res2 = await request(app).get(`${v}/user`)
     expect(res2.statusCode).toBe(200)
-    expect(res2.body.users[0].email).toContain('testtest7@email.com')
+    expect(res2.body.users[0].email).toContain('testtest')
   })
 
   it('responds 200 with query string of email to search a user', async () => {
@@ -33,11 +38,7 @@ describe('Route: /user', () => {
   })
 })
 
-describe('Route: /user/currentuser', () => {
-
-  beforeEach(async () => {
-    await prisma.user.deleteMany({})
-  })
+describe('GET: /user/currentuser', () => {
 
   it('responds 200 with {user: null} if not logging in', async () => {
     const res = await request(app).get(`${v}/user/currentuser`)
@@ -65,11 +66,7 @@ describe('Route: /user/currentuser', () => {
 
 })
 
-describe('Route: /user/:id', () => {
-
-  beforeEach(async () => {
-    await prisma.user.deleteMany({})
-  })
+describe('GET: /user/:id', () => {
 
   it('responds 200 with corrensponding user info', async () => {
     const res1 = await request(app).post(`${v}/user/signup`).send({

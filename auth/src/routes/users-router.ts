@@ -21,7 +21,7 @@ userRouter.get('/currentuser', (req, res) => {
 
 userRouter.get('/renewtoken', async (req, res) => {
   if (!req.user?.id)
-    return res.status(200).json()
+    return res.status(200).json({ message: '{ user: null }'})
 
   const user = await userWithJourneyById(req.user.id)
   if (!user) { req.session = null }

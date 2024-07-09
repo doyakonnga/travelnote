@@ -7,7 +7,7 @@ import { body } from 'express-validator'
 export const journeyMemberRouter = express.Router()
 
 const isArrayOfString = (field: any) => {
-  if (Array.isArray(field)) return false
+  if (!Array.isArray(field)) return false
   for (const m of field) {
     if (typeof m !== 'string') return false
   }
@@ -25,7 +25,8 @@ journeyMemberRouter.post('/',
   validation,
   async (req, res) => {
     const id: string = req.body.journeyId
-    const members: { id: string }[] = req.body.members
+    const members: { id: string }[] =
+      req.body.members.map((id: string) => ({ id }))
     const journey = await addMember({ id, members })
 
     const producer = redpanda.producer
@@ -36,7 +37,7 @@ journeyMemberRouter.post('/',
     })
     console.log(`event sent, journey-modified, id: ${journey.id}`)
 
-    return res.status(200).json(journey)
+    return res.status(200).json({ journey })
   })
 
 journeyMemberRouter.patch('/',
@@ -57,6 +58,6 @@ journeyMemberRouter.patch('/',
     })
     console.log(`event sent, journey-modified, id: ${journey.id}`)
 
-    return res.status(200).json(journey)
+    return res.status(200).json({ journey })
   })
 

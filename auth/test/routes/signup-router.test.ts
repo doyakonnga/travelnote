@@ -7,6 +7,12 @@ describe('Route: /user/signup', () => {
 
   beforeEach(async () => {
     await prisma.user.deleteMany({})
+    jest.clearAllMocks()
+  })
+
+  afterAll(async () => {
+    await prisma.user.deleteMany({})
+    jest.clearAllMocks()
   })
 
   it('responds 400 with invalid email or password', async () => {

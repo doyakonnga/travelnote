@@ -15,16 +15,17 @@ journeyRouter.get('/:id', async (req, res) => {
 })
 
 journeyRouter.get('/', async (req, res) => {
-  if (!req.user?.id)
-    return res.status(200).json([])
+  if (!req.user?.id) 
+    return res.status(200).json({ journeys: [] })
 
   const journeys = await userJourneys(req.user.id)
-  return res.status(200).json(journeys)
+  return res.status(200).json({ journeys })
 })
 
 journeyRouter.post('/', async (req, res) => {
   const name = req.body.name
   if (!name) throw E[E['Journey title required']]
+  if (!req.user?.id) throw E[E['#401']]
   const subtitle = req.body.subtitle || null
   const picture = req.body.picture || null
   const journey = await createJourney({
@@ -36,13 +37,14 @@ journeyRouter.post('/', async (req, res) => {
 
   const producer = redpanda.producer
   const journeyProducer = new JourneyPublisher(producer)
-  journeyProducer.send(journey.id, {
+  await journeyProducer.send(journey.id, {
     action: 'created',
     journey
   })
 
-  return res.status(200).json(journey)
+  return res.status(201).json({ journey })
 })
+
 
 const equelNullorisString = (field: any) => {
   if (field == null || typeof field === 'string')
@@ -52,13 +54,13 @@ const equelNullorisString = (field: any) => {
 const isUndefinedOrString = (field: any) => {
   if (field === undefined || typeof field === 'string')
     return true
-  throw new Error('must be null, undefined or string')
+  throw new Error('must be undefined or string')
 }
 
 journeyRouter.patch('/:id',
   param('id').isString(),
   body('name').custom(isUndefinedOrString),
-  ...['subtitle', 'picture'].map(field => 
+  ...['subtitle', 'picture'].map(field =>
     body(field).custom(equelNullorisString)),
   validation,
   async (req, res) => {
@@ -67,5 +69,14 @@ journeyRouter.patch('/:id',
     if (!req.user.journeyIds.includes(id))
       throw E[E['#401']]
     const journey = await patchJourney({ id, name, subtitle, picture })
+
+    const producer = redpanda.producer
+    const journeyProducer = new JourneyPublisher(producer)
+    await journeyProducer.send(journey.id, {
+      action: 'modified',
+      journey
+    })
+    console.log(`event sent, journey-modified, id: ${journey.id}`)
+
     return res.status(200).json({ journey })
   })

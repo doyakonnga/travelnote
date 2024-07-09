@@ -1,4 +1,4 @@
-version: '3.8'
+
 services:
   postgres:
     image: postgres:13
@@ -8,7 +8,12 @@ services:
       POSTGRES_DB: photo
       POSTGRES_HOST_AUTH_METHOD: trust
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
     ports: 
       - '3000:3000'
     environment:
