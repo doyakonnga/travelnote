@@ -41,9 +41,9 @@ beforeEach(async () => {
 })
 
 
-describe('POST: /journey/members', () => {
+describe('POST: /journeys/members', () => {
 
-  const SUT = () => request(app).post(`${v}/journey/members`)
+  const SUT = () => request(app).post(`${v}/journeys/members`)
 
   it('responds 401 with invalid cookie', async () => {
     const res = await SUT()
@@ -59,7 +59,7 @@ describe('POST: /journey/members', () => {
     expect(res1.statusCode).toBe(400)
 
     const res2 = await request(app)
-      .post(`${v}/journey/members`).set('Cookie', newCookie)
+      .post(`${v}/journeys/members`).set('Cookie', newCookie)
       .send({ members: [id2] })
     expect(res2.statusCode).toBe(400)
   })
@@ -80,9 +80,9 @@ describe('POST: /journey/members', () => {
   })
 })
 
-describe('PATCH: /journey/members', () => {
+describe('PATCH: /journeys/members', () => {
 
-  const SUT = () => request(app).patch(`${v}/journey/members`)
+  const SUT = () => request(app).patch(`${v}/journeys/members`)
 
   it('responds 401 with invalid cookie', async () => {
     const res = await SUT()

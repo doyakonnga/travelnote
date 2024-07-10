@@ -19,16 +19,16 @@ app.use(cookieSession({
   // secure: process.env.NODE_ENV !== 'test'
  }), reqUser)
 
-app.use(`${v}/user/signup`, signupRouter)
-app.use(`${v}/user/login`, loginRouter)
-app.use(`${v}/user/logout`, (req, res) => {
+app.use(`${v}/users/signup`, signupRouter)
+app.use(`${v}/users/login`, loginRouter)
+app.use(`${v}/users/logout`, (req, res) => {
   req.session = null
   return res.redirect('/')
 })
-app.use(`${v}/user/oauth`, oauthRouter)
-app.use(`${v}/user`, userRouter)
-app.use(`${v}/journey/members`, journeyMemberRouter)
-app.use(`${v}/journey`, journeyRouter)
+app.use(`${v}/users/oauth`, oauthRouter)
+app.use(`${v}/users`, userRouter)
+app.use(`${v}/journeys/members`, journeyMemberRouter)
+app.use(`${v}/journeys`, journeyRouter)
 
 app.all('*', (req, res) => {
   throw '404'

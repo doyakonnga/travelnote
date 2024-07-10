@@ -60,7 +60,7 @@ const Carousel = ({ photos }: { photos: PhotoJoinedAlbum[] }) => {
         <div className="flex-col items-center gap-2 m-4">
           <div className="flex items-center justify-center">
             <Link className="flex items-center gap-1 text-sky-300"
-              href={`/journey/${jId}/albums/${photos[current].albumId}`}>
+              href={`/${jId}/albums/${photos[current].albumId}`}>
               <Folder />
               {/* <BiPhotoAlbum /> */}
               <p>{photos[current].album.name}</p>

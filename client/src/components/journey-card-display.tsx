@@ -20,10 +20,10 @@ const JourneyCard = (props: Props) => {
   return (
 
     <div className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto">
-      <Link href={'/journey/' + journeyId} className="w-full">
+      <Link href={`/${journeyId}`} className="w-full">
         <div className="bg-white p-6 rounded-lg flex flex-wrap">
           <Image className="h-72  rounded w-full object-cover object-center mb-6" src={picture || '/landscape.jpg'} alt="journey picture" width={720} height={400} />
-          <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{title}</h1>
+          <h1 className="text-lg text-gray-900 font-medium title-font mb-4 w-full">{title}</h1>
           <p className="leading-relaxed text-base">{subtitle}</p>
         </div>
       </Link>

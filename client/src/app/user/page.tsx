@@ -9,7 +9,7 @@ const UserPage = async () => {
   let user: Member
   try {
     const { data } = await axios
-      .get(`${process.env.NGINX_HOST}/api/v1/user/currentuser`, {
+      .get(`${process.env.NGINX_HOST}/api/v1/users/currentuser`, {
         headers: {
           Host: "travelnote.com",
           Cookie

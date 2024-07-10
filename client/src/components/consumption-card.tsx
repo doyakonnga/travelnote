@@ -203,7 +203,7 @@ const ConsumptionCard = ({ consumption, members }: {
                 result: 'success', id: randomId, message
               })
               router.replace(
-                `/journey/${consumption.journeyId}/consumptions?id=${randomId}&message=${message}`
+                `/${consumption.journeyId}/consumptions?id=${randomId}&message=${message}`
               )
             } catch (e) {
               console.log(e)

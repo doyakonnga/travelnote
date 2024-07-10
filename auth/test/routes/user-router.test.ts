@@ -18,7 +18,7 @@ describe('GET: /user', () => {
     const res1 = await request(app).get(`${v}/user`)
     expect(res1.statusCode).toBe(200)
     expect(res1.body.users).toEqual([])
-    await request(app).post(`${v}/user/signup`).send({
+    await request(app).post(`${v}/users/signup`).send({
       email: 'testtest7@email.com',
       password: 'password'
     })
@@ -28,7 +28,7 @@ describe('GET: /user', () => {
   })
 
   it('responds 200 with query string of email to search a user', async () => {
-    await request(app).post(`${v}/user/signup`).send({
+    await request(app).post(`${v}/users/signup`).send({
       email: 'testtest8@email.com',
       password: 'password'
     })
@@ -38,27 +38,27 @@ describe('GET: /user', () => {
   })
 })
 
-describe('GET: /user/currentuser', () => {
+describe('GET: /users/currentuser', () => {
 
   it('responds 200 with {user: null} if not logging in', async () => {
-    const res = await request(app).get(`${v}/user/currentuser`)
+    const res = await request(app).get(`${v}/users/currentuser`)
     expect(res.statusCode).toBe(200)
     expect(res.body.user).toBeNull()
   })
 
   it('responds 200 with current user info', async () => {
-    await request(app).post(`${v}/user/signup`).send({
+    await request(app).post(`${v}/users/signup`).send({
       email: 'testtest9@email.com',
       password: 'password'
     })
-    const res0 = await request(app).post(`${v}/user/login`).send({
+    const res0 = await request(app).post(`${v}/users/login`).send({
       email: 'testtest9@email.com',
       password: 'password'
     })
     let cookie = res0.get('Set-Cookie')
     expect(cookie).toBeDefined()
     cookie = cookie || []
-    const res = await request(app).get(`${v}/user/currentuser`)
+    const res = await request(app).get(`${v}/users/currentuser`)
       .set("Cookie", cookie)
     expect(res.statusCode).toBe(200)
     expect(res.body.user.email).toBe('testtest9@email.com')
@@ -66,15 +66,15 @@ describe('GET: /user/currentuser', () => {
 
 })
 
-describe('GET: /user/:id', () => {
+describe('GET: /users/:id', () => {
 
   it('responds 200 with corrensponding user info', async () => {
-    const res1 = await request(app).post(`${v}/user/signup`).send({
+    const res1 = await request(app).post(`${v}/users/signup`).send({
       email: 'testtest8@email.com',
       password: 'password'
     })
     const id: string = res1.body.user.id
-    const res2 = await request(app).get(`${v}/user/${id}`)
+    const res2 = await request(app).get(`${v}/users/${id}`)
     expect(res2.statusCode).toBe(200)
     expect(res2.body.user.email).toBe(res1.body.user.email)
   })

@@ -4,9 +4,9 @@ import { usePathname } from "next/navigation"
 
 const SelectionBar = () => {
   const pathElements = usePathname().split('/')
-  const curPath = pathElements[3] || ''
-  const basePath = pathElements.slice(0, 3).join('/')
-  const current = "relative flex items-center justify-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-gray-700"
+  const curPath = pathElements[2] || ''
+  const basePath = pathElements.slice(0, 2).join('/')
+  const current = "relative flex items-center justify-center gap-2 rounded-t-lg bg-gray-50 px-3 py-2 text-gray-700"
   const option = "flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
 
   return (
@@ -51,7 +51,7 @@ const SelectionBar = () => {
         <li className="flex-1">
           <Link
             href="#"
-            className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+            className={('albums' === curPath) ? current : option}
           >
             Notification
           </Link>

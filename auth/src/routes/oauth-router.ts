@@ -17,7 +17,7 @@ oauthRouter.get('/', async (req, res) => {
         code: req.query.code as string,
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
-        redirect_uri: 'http://travelnote.com/api/v1/user/oauth',
+        redirect_uri: 'http://travelnote.com/api/v1/users/oauth',
         grant_type: 'authorization_code'
       }), {
       headers: {

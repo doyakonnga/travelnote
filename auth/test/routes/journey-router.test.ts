@@ -74,7 +74,7 @@ describe('PATCH: /journey', () => {
     const { id } = res0.body.journey
     // PATCH by the second user
     const { cookie: cookie2 } = await login()
-    const res = await request(app).patch(`${v}/journey/${id}`)
+    const res = await request(app).patch(`${v}/journeys/${id}`)
       .set('Cookie', cookie2).send({ name: 'test2' })
     expect(res.statusCode).toBe(401)
   })
@@ -84,7 +84,7 @@ describe('PATCH: /journey', () => {
     await request(app).post(`${v}/journey`)
       .set('Cookie', cookie).send({ name: 'test' })
     // PATCH
-    const res = await request(app).patch(`${v}/journey/`)
+    const res = await request(app).patch(`${v}/journeys/`)
       .set('Cookie', cookie).send({ name: 'test2' })
     expect(res.statusCode).toBe(400)
   })
@@ -99,7 +99,7 @@ describe('PATCH: /journey', () => {
       .get(`${v}/user/renewtoken`).set('Cookie', cookie)
     const newCookie = res1.get('Set-Cookie') || []
     // PATCH
-    const res = await request(app).patch(`${v}/journey/${id}`)
+    const res = await request(app).patch(`${v}/journeys/${id}`)
       .set('Cookie', newCookie).send({ name: 'test2' })
     expect(res.statusCode).toBe(200)
     expect(res.body.journey.name).toBe('test2')

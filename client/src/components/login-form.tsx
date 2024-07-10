@@ -48,7 +48,7 @@ const LoginForm = () => {
     formData: FormData
   ): Promise<FormState> => {
     try {
-      const { data, headers } = await axios.post(`/api/v1/user/login`, {
+      const { data, headers } = await axios.post(`/api/v1/users/login`, {
         email: formData.get('email'),
         password: formData.get('password')
       })

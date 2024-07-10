@@ -29,7 +29,7 @@ const AlbumPage = async ({ params }: {
   return (
     <div>
       <div className="py-1 my-2">
-        <Link href={`/journey/${jId}/albums`} className="hover:text-blue-500">{'Albums'}</Link>
+        <Link href={`/${jId}/albums`} className="hover:text-blue-500">{'Albums'}</Link>
         <span>{' >> '}</span>
         <Link href="#" className="hover:text-blue-500">{album.name}</Link>
       </div>

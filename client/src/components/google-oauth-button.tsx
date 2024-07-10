@@ -2,7 +2,7 @@ import Link from "next/link"
 
 const GoogleOauthButton = ({ children }: { children: string}) => {
   return (
-    <Link href={`https://accounts.google.com/o/oauth2/v2/auth?scope=profile+email&response_type=code&redirect_uri=${'http://travelnote.com/api/v1/user/oauth'}&client_id=${process.env.OAUTH_CLIENT_ID}`}>
+    <Link href={`https://accounts.google.com/o/oauth2/v2/auth?scope=profile+email&response_type=code&redirect_uri=${'http://travelnote.com/api/v1/users/oauth'}&client_id=${process.env.OAUTH_CLIENT_ID}`}>
       <button
         type="button"
         className="w-full flex justify-center items-center gap-2 bg-white text-sm text-gray-600 p-2 rounded-md hover:bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300"

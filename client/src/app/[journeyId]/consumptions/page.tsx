@@ -21,7 +21,7 @@ const ConsumptionPage = async ({ params }: {
       axios.get(`${process.env.NGINX_HOST}/api/v1/consumptions/?journeyId=${jId}`, {
         headers: { Host: "travelnote.com", Cookie }
       }),
-      axios.get(`${process.env.NGINX_HOST}/api/v1/journey/${jId}`, {
+      axios.get(`${process.env.NGINX_HOST}/api/v1/journeys/${jId}`, {
         headers: { Host: "travelnote.com", Cookie }
       }).catch((e) => {
         console.log(e)

@@ -16,7 +16,7 @@ const JourneyLayout = async ({ params, children }: {
   let journey: Journey
   try {
     const { data } = await axios
-      .get(`${process.env.NGINX_HOST}/api/v1/journey/${journeyId}`, {
+      .get(`${process.env.NGINX_HOST}/api/v1/journeys/${journeyId}`, {
         headers: {
           Host: "travelnote.com",
           Cookie

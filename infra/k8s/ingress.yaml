@@ -10,7 +10,7 @@ spec:
     - host: travelnote.com
       http:
         paths:
-          - path: /api/v1/(user|journey)/?(.*)
+          - path: /api/v1/(users|journeys)/?(.*)
             pathType: Prefix
             backend:
               service:

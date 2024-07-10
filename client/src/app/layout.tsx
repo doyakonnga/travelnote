@@ -92,7 +92,7 @@ export default async function RootLayout({
   }).join(' ')
   let currentUser: CurrentUser | null = null
   try {
-    currentUser = (await axios.get('http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/v1/user/currentuser', {
+    currentUser = (await axios.get(`${process.env.NGINX_HOST}/api/v1/users/currentuser`, {
       headers: {
         Host: "travelnote.com",
         Cookie

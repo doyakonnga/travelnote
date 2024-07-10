@@ -31,7 +31,7 @@ const AlbumsPage = async ({ params }: { params: { journeyId: string } }) => {
         {albums.map((a) =>
           <div key={a.id} className="p-2 rounded-xl hover:bg-gray-100">
             <Link className="block space-y-1"
-              href={`/journey/${jId}/albums/${a.id}`}>
+              href={`/${jId}/albums/${a.id}`}>
               <div className="relative w-36 h-36 rounded-xl overflow-hidden shadow-md">
                 <Image
                   src={a.photos[0] ? a.photos[0].url : '/gray.png'}

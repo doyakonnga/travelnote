@@ -40,7 +40,7 @@ const UserInfo = ({ user }: { user: Member }) => {
       let newS3Url: string | undefined = undefined
       if (uploaded)
         newS3Url = await uploadToS3(uploaded.file)
-      const { data } = await axios.patch(`/api/v1/user/${user.id}`, {
+      const { data } = await axios.patch(`/api/v1/users/${user.id}`, {
         name, avatar: newS3Url
       })
       if (s3Avatar !== data.user.avatar)

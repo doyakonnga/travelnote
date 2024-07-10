@@ -76,7 +76,7 @@ const JourneyCard = (props: Props) => {
       if (uploaded)
         s3Url = await uploadToS3(uploaded.file)
       const { data } = await axios.patch(
-        `/api/v1/journey/${query.id}`, { ...query, picture: s3Url})
+        `/api/v1/journeys/${query.id}`, { ...query, picture: s3Url})
       const { id, name, subtitle, picture }: Props & { name: string } = data.journey
       deleteFromS3(query.picture || '')
       setQuery({ id, title: name, subtitle, picture })
@@ -98,7 +98,7 @@ const JourneyCard = (props: Props) => {
       try {
         setLoading(true)
         if (!foundUser) throw new Error('user not found')
-        await axios.post('/api/v1/journey/members', {
+        await axios.post('/api/v1/journeys/members', {
           journeyId: id,
           members: [{ id: foundUser.id }]
         })
@@ -117,7 +117,7 @@ const JourneyCard = (props: Props) => {
       }
     } else if (option === 3) {
       try {
-        await axios.patch('/api/v1/journey/members', {
+        await axios.patch('/api/v1/journeys/members', {
           journeyId: id,
           quitingMemberId: ''
         })
@@ -208,7 +208,7 @@ const JourneyCard = (props: Props) => {
               <button type="button" className="absolute right-0 top-0 mt-5 mr-4"
                 onClick={(e) => {
                   setLoading(true)
-                  fetch(`/api/v1/user?email=${keyword}`)
+                  fetch(`/api/v1/users?email=${keyword}`)
                     .then((response) => response.json())
                     .then((data) => setFoundUser(data.user))
                     .catch((err) => console.log(err))

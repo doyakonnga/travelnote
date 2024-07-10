@@ -18,13 +18,14 @@ export default async function Home() {
 
   let list: React.JSX.Element[] = []
   try {
-    const { data }: { data: Journeys } = await axios.get(process.env.NGINX_HOST + '/api/v1/journey', {
+    const { data } = await axios.get(process.env.NGINX_HOST + '/api/v1/journeys', {
       headers: {
         Host: "travelnote.com",
         Cookie
       }
     })
-    list = data.map((j) => <JourneyCard
+    const journeys: Journeys = data.journeys
+    list = journeys.map((j) => <JourneyCard
       key={j.id}
       journeyId={j.id}
       title={j.name}

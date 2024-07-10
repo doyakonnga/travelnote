@@ -6,7 +6,7 @@ import { getUploadUrl } from "./actions"
 import { Sha256 } from "@aws-crypto/sha256-browser"
 
 export const Renew = () => {
-  fetch('/api/v1/user/renewtoken').then().catch(()=>{})
+  fetch('/api/v1/users/renewtoken').then().catch(()=>{})
   return (<></>)
 }
 

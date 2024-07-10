@@ -3,7 +3,7 @@ import { app, v } from '../../src/app'
 import { prisma } from '../../src/prisma-client'
 
 
-describe('Route: /user/signup', () => {
+describe('Route: /users/signup', () => {
 
   beforeEach(async () => {
     await prisma.user.deleteMany({})
@@ -16,7 +16,7 @@ describe('Route: /user/signup', () => {
   })
 
   it('responds 400 with invalid email or password', async () => {
-    const res = await request(app).post(`${v}/user/signup`).send({
+    const res = await request(app).post(`${v}/users/signup`).send({
       email: '',
       password: ''
     })
@@ -24,7 +24,7 @@ describe('Route: /user/signup', () => {
   })
 
   it('responds 201 with legal email and password', async () => {
-    const res = await request(app).post(`${v}/user/signup`).send({
+    const res = await request(app).post(`${v}/users/signup`).send({
       email: 'testtest@email.com',
       password: 'password'
     })
@@ -32,11 +32,11 @@ describe('Route: /user/signup', () => {
   })
 
   it('responds 400 with registered email', async () => {
-    const res = await request(app).post(`${v}/user/signup`).send({
+    const res = await request(app).post(`${v}/users/signup`).send({
       email: 'testtest2@email.com',
       password: 'password'
     })
-    const res2 = await request(app).post(`${v}/user/signup`).send({
+    const res2 = await request(app).post(`${v}/users/signup`).send({
       email: 'testtest2@email.com',
       password: 'password'
     })

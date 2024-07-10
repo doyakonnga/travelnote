@@ -17,7 +17,7 @@ const PhotoDetailModal = ({ setModalAction, photoString }: {
   const [user, setUser] = useState<Member | null>(null)
   const [consumption, setConsumption] = useState<Consumption | null>(null)
   useEffect(() => {
-    axios.get(`/api/v1/user/${photo.userId}`)
+    axios.get(`/api/v1/users/${photo.userId}`)
       .then(({ data }) => setUser(data.user)).catch(e => console.log(e))
     if (photo.consumptionId)
       axios.get(`/api/v1/consumptions/${photo.consumptionId}?journeyId=${journeyId}`)
@@ -41,7 +41,7 @@ const PhotoDetailModal = ({ setModalAction, photoString }: {
               <h1>{photo.description}</h1>
             </div>) : <Spinner />}
           {consumption ? (
-            <Link href={`/journey/${journeyId}/consumptions#${consumption.id}`}>
+            <Link href={`/${journeyId}/consumptions#${consumption.id}`}>
               <h1>
                 <RectangleList className="inline" />
                 {consumption.isForeign}
