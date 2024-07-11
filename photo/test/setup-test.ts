@@ -1,3 +1,5 @@
+import { prisma } from "../src/prisma-client"
+import { setup } from "./function"
 
 jest.mock('@dkprac/common', () => ({
   ...jest.requireActual('@dkprac/common'),
@@ -8,6 +10,11 @@ jest.mock('@dkprac/common', () => ({
   }
 }))
 
-beforeAll(() => {
+beforeAll(async () => {
   if (process.env.DATABASE_URL !== 'postgresql://test:test@postgres:5432/photo') throw 'WRONG TEST DATABASE'
+
+  await Promise.all(
+    (['photo', 'consumption', 'album', 'journey'] as const)
+      .map(table => (prisma[table].deleteMany as any)({})))
+  await setup.create()
 })

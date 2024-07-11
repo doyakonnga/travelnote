@@ -18,18 +18,18 @@ photoRouter.get("/", async (req, res) => {
   if (!roughPhotos) throw E[E['scope not specified']]
   if (roughPhotos[0] && !journeyIds.includes(roughPhotos[0].album.journeyId)) 
     throw E[E['#401']]
-  const photos = roughPhotos.map(p => {return {...p, editable: p.userId === uId}})
+  const photos = roughPhotos.map(p => ({...p, editable: p.userId === uId}))
   return res.status(200).json({ photos })
 })
 
 
 photoRouter.post('/',
-  body('url').isString(),
+  body('url').notEmpty().isString(),
   body('description').default('').isString(),
   (req, res, next) => {
     body('userId').default(req.user?.id).isString()(req, res, next)
   },
-  body('albumId').isString(),
+  body('albumId').notEmpty().isString(),
   body('consumptionId').default('').isString(),
   validation,
   async (req, res) => {  

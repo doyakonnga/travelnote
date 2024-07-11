@@ -27,23 +27,25 @@ albumRouter.get('/:id',
 
 albumRouter.post('/',
   requireInJourney,
-  body('journeyId').isString(),
-  body('name').isString(),
+  body('journeyId').notEmpty().isString(),
+  body('name').notEmpty().isString(),
   validation,
   async (req, res) => {
-    if (!req.user?.id) throw E[E['#401']]
+    const journeyId: string = req.body.journeyId
+    if (!req.user?.journeyIds.includes(journeyId)) 
+      throw E[E['#401']]
     const album = await createAlbum({
       name: req.body.name,
-      journeyId: req.body.journeyId,
+      journeyId,
       userId: req.user.id
     })
-    return res.status(200).json({ album })
+    return res.status(201).json({ album })
   }
 )
 
 albumRouter.patch('/:id',
-  param('id').isString(),
-  body('name').isString(),
+  param('id').notEmpty().isString(),
+  body('name').notEmpty().isString(),
   validation,
   async (req, res) => {
     const id: string = req.params.id
@@ -55,7 +57,7 @@ albumRouter.patch('/:id',
 )
 
 albumRouter.delete('/:id',
-  param('id').isString(),
+  param('id').notEmpty().isString(),
   validation,
   async (req, res) => {
     await moveAllphotos({

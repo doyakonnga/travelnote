@@ -9,7 +9,13 @@ function catchingWrapper<T extends any[], U>(f: (...arg: T) => Promise<U>) {
       return await f(...arg)
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2025') throw E[E['#404']]
+        switch (e.code) {
+          case 'P2025':
+            console.log('prisma not found')
+            throw E[E['#404']]
+          case 'P2002':
+            throw 'unique constraint violation'
+        }         
       }
       throw e
     }
@@ -80,18 +86,11 @@ export async function createAlbum({ name, userId, journeyId }: {
   userId: string
   journeyId: string
 }) {
-  try {
-    return await prisma.album.create({
-      data: {
-        name, userId, journeyId
-      }
-    })
-  } catch (e) {
-    if (e instanceof PrismaClientKnownRequestError)
-      if (e.code === 'P2002')
-        throw 'unique constraint violation'
-    throw e
-  }
+  return await prisma.album.create({
+    data: {
+      name, userId, journeyId
+    }
+  })
 }
 
 export const updateAlbum = catchingWrapper(async ({ id, name, journeyIds }: {
@@ -153,7 +152,7 @@ export const moveAllphotos = catchingWrapper(async (props: {
   })
 })
 
-export const deleteAlbumById = catchingWrapper(async(id: string) => {
+export const deleteAlbumById = catchingWrapper(async (id: string) => {
   return await prisma.album.delete({
     where: { id },
     include: { photos: true }
