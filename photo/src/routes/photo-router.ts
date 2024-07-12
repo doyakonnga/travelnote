@@ -1,5 +1,5 @@
 import express from 'express'
-import { albumAccessible, albumPhotoById, consumptionPhotoById, createMultiplePhoto, createPhoto, deletePhotoById, journeyPhotoById, movePhotos, updatePhoto } from '../prisma-client'
+import { albumAccessible, albumPhotoById, consumptionPhotoById, createMultiplePhoto, createPhoto, deletePhotoById, deletePhotoByIds, journeyPhotoById, movePhotos, updatePhoto } from '../prisma-client'
 import { body, param, query } from 'express-validator'
 import { validation, E } from '@dkprac/common'
 
@@ -16,9 +16,9 @@ photoRouter.get("/", async (req, res) => {
           await journeyPhotoById(req.query.journeyId)
           : null
   if (!roughPhotos) throw E[E['scope not specified']]
-  if (roughPhotos[0] && !journeyIds.includes(roughPhotos[0].album.journeyId)) 
+  if (roughPhotos[0] && !journeyIds.includes(roughPhotos[0].album.journeyId))
     throw E[E['#401']]
-  const photos = roughPhotos.map(p => ({...p, editable: p.userId === uId}))
+  const photos = roughPhotos.map(p => ({ ...p, editable: p.userId === uId }))
   return res.status(200).json({ photos })
 })
 
@@ -27,12 +27,13 @@ photoRouter.post('/',
   body('url').notEmpty().isString(),
   body('description').default('').isString(),
   (req, res, next) => {
-    body('userId').default(req.user?.id).isString()(req, res, next)
+    if (!req.user) throw E[E['#401']]
+    body('userId').default(req.user.id).isString()(req, res, next)
   },
   body('albumId').notEmpty().isString(),
   body('consumptionId').default('').isString(),
   validation,
-  async (req, res) => {  
+  async (req, res) => {
     const data: {
       url: string
       description: string | null
@@ -49,7 +50,7 @@ photoRouter.post('/',
       albumId: data.albumId,
       consumptionId: data.consumptionId || undefined
     })
-    return res.status(200).json({ photo })
+    return res.status(201).json({ photo })
   }
 )
 
@@ -57,8 +58,8 @@ photoRouter.post('/multiple',
   (req, res, next) => {
     body('userId').default(req.user?.id).isString()(req, res, next)
   },
-  body('albumId').isString(),
-  body('urls').custom((urls) => {    
+  body('albumId').notEmpty().isString(),
+  body('urls').custom((urls) => {
     if (!Array.isArray(urls))
       throw new Error('urls must be array')
     urls.forEach((url) => {
@@ -79,12 +80,12 @@ photoRouter.post('/multiple',
     const { count } = await createMultiplePhoto({
       userId, albumId, urls
     })
-    res.status(200).json({ count })
+    res.status(201).json({ count })
   }
 )
 
 photoRouter.patch('/',
-  body('albumId').isString(),
+  body('albumId').notEmpty().isString(),
   body('photoIds').custom((photoIds: any) => {
     if (!Array.isArray(photoIds))
       throw new Error('photosIds must be array')
@@ -96,7 +97,7 @@ photoRouter.patch('/',
   }),
   validation,
   async (req, res) => {
-    const {journeyIds} = req.user
+    const { journeyIds } = req.user
     const albumId: string = req.body.albumId
     const photoIds: string[] = req.body.photoIds
     const { count } = await movePhotos({ albumId, photoIds, journeyIds })
@@ -104,11 +105,12 @@ photoRouter.patch('/',
   }
 )
 
-photoRouter.patch('/:id', 
+photoRouter.patch('/:id',
   param('id').isString(),
   body('description').default('').isString(),
   body('albumId').default('').isString(),
   body('consumptionId').default('').isString(),
+  validation,
   async (req, res) => {
     const photo = await updatePhoto({
       id: req.params!.id as string,
@@ -117,10 +119,11 @@ photoRouter.patch('/:id',
       consumptionId: req.body.consumptionId || undefined,
     })
     res.status(200).json({ photo })
-})
+  })
 
 photoRouter.delete('/:id',
   param('id').isString(),
+  validation,
   async (req, res) => {
     const photo = await deletePhotoById(req.params!.id, req.user.id)
     return res.status(200).json({ photo })
@@ -140,7 +143,7 @@ photoRouter.delete('/',
   validation,
   async (req, res) => {
     const ids = req.query.ids as string[]
-    const { count } = await deletePhotoById(ids, req.user.id)
+    const { count } = await deletePhotoByIds(ids, req.user.id)
     res.status(200).json({ count })
   }
 )

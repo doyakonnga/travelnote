@@ -14,8 +14,10 @@ function catchingWrapper<T extends any[], U>(f: (...arg: T) => Promise<U>) {
             console.log('prisma not found')
             throw E[E['#404']]
           case 'P2002':
-            throw 'unique constraint violation'
-        }         
+            throw E[E['unique constraint violation']]
+          case 'P2003':
+            throw E[E['FK constraint failed']]
+        }
       }
       throw e
     }
@@ -196,28 +198,47 @@ interface photoInit {
   albumId: string
   consumptionId?: string
 }
-export async function createPhoto(attrs: photoInit) {
-  return await prisma.photo.create({
-    data: {
-      url: attrs.url,
-      description: attrs.description,
-      userId: attrs.userId,
-      albumId: attrs.albumId,
-      consumptionId: attrs.consumptionId
-    },
-    include: { album: true }
-  })
-}
-
-export async function createMultiplePhoto({ userId, albumId, urls }: {
-  userId: string; albumId: string; urls: string[]
-}) {
-  return await prisma.photo.createMany({
-    data: urls.map(url => {
-      return { userId, url, albumId }
+export const createPhoto = catchingWrapper(
+  async (attrs: photoInit) => {
+    return await prisma.photo.create({
+      data: {
+        url: attrs.url,
+        description: attrs.description,
+        userId: attrs.userId,
+        albumId: attrs.albumId,
+        consumptionId: attrs.consumptionId
+      },
+      include: { album: true }
     })
   })
-}
+
+export const createMultiplePhoto = catchingWrapper(
+  async ({ userId, albumId, urls }: {
+    userId: string;
+    albumId: string;
+    urls: string[]
+  }) => {
+    return await prisma.photo.createMany({
+      data: urls.map(url => {
+        return { userId, url, albumId }
+      })
+    })
+    // const album = await prisma.album.update({
+    //   where: {
+    //     id: albumId,
+    //     journeyId: { in: ['user.journeyIds'] }
+    //   },
+    //   data: {
+    //     photos: {
+    //       createMany: { data: urls.map(url => ({ userId, url, albumId })) }
+    //     }
+    //   },
+    //   select: {
+    //     photos: true
+    //   }
+    // })
+    // return album.photos
+  })
 
 export const updatePhoto = catchingWrapper(async (attrs: {
   id: string
@@ -232,20 +253,13 @@ export const updatePhoto = catchingWrapper(async (attrs: {
   })
 })
 
-export async function deletePhotoById(id: string, userId: string): Promise<{
-  id: string;
-  url: string;
-  description: string | null;
-  userId: string;
-  createdAt: Date;
-  albumId: string;
-  consumptionId: string | null;
-}>
-export async function deletePhotoById(id: string[], userId: string): Promise<Prisma.BatchPayload>
-export async function deletePhotoById(id: string | string[], userId: string) {
-  if (typeof id === 'string')
-    return await prisma.photo.delete({ where: { id, userId } })
-  else
-    return await prisma.photo.deleteMany({ where: { id: { in: id }, userId } })
-}
+
+export const deletePhotoById = catchingWrapper(
+  async (id: string, userId: string) =>
+    await prisma.photo.delete({ where: { id, userId } }))
+
+export const deletePhotoByIds = catchingWrapper(
+  async (ids: string[], userId: string) =>
+    await prisma.photo.deleteMany({ where: { id: { in: ids }, userId } }))
+
 

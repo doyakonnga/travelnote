@@ -8,6 +8,8 @@ export enum E {
   'journeyId param not provided',
   'express-validator errors',
   'not all users in the journey',
+  'unique constraint violation',
+  'FK constraint failed',
   '#401',
   '#404'
 }

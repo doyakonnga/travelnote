@@ -12,7 +12,7 @@ export const errorHandler = (
     console.log('into errorHandlerMiddleware')
     console.log(err)
     switch (err) {
-
+      // auth field
       case E[E['email in use']]:
         return res.status(400)
           .json([{ field: 'email', message: 'The email is in use.' }])
@@ -23,16 +23,18 @@ export const errorHandler = (
         return res.status(400)
           .json([{ field: 'password', message: 'Password Incorrect' }])
 
+      // joureny
       case E[E['Journey title required']]:
         return res.status(400)
           .json([{ field: 'title', message: 'Journey title required' }])
       case E[E['scope not specified']]:
         return res.status(400)
           .json([{ field: 'query', message: 'scope not specified'}])
-
       case E[E['journeyId param not provided']]:
         return res.status(400)
           .json([{ field: 'journeyId', message: 'journeyId not provided in query or body' }])
+
+      // express validator
       case E[E['express-validator errors']]:
         const result = validationResult(req).array().map((e) => {
           return { field: `${(e as any).location}.${(e as any).path}`, message: e.msg }
@@ -41,7 +43,16 @@ export const errorHandler = (
       case E[E['not all users in the journey']]:
         return res.status(400)
           .json([{ field: 'expenses.userId', message: 'not all users are in the journey' }])
-
+      
+      // prisma error
+      case E[E['unique constraint violation']]:
+        return res.status(400)
+          .json([{ field: 'unspecified', message: 'unique constraint violation, some field might need an unique value' }])
+      case E[E['FK constraint failed']]:
+        return res.status(404)
+          .json([{ field: 'unspecified', message: 'FK constraint failed, some field representing FK has no corresponding record.' }])
+      
+      // simple error
       case E[E['#401']]:
         return res.status(401)
           .json([{ field: 'user or journey', message: 'unauthorized' }])

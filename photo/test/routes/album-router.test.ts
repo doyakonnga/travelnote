@@ -43,14 +43,14 @@ describe('POST: /albums', () => {
     })
   })
 
-  it('respnds 400 without valid body.name', async () => {
+  it('responds 400 without valid body.name', async () => {
     const res = await SUT()
       .set('Cookie', setup.cookies)
       .send({ name: '', journeyId: setup.journeyId })
     expect(res.statusCode).toBe(400)
   })
 
-  it('respnds 401 with valid cookie', async () => {
+  it('responds 401 with valid cookie', async () => {
     const res = await SUT()
       .send({ name: 'new', journeyId: setup.journeyId })
     expect(res.statusCode).toBe(401)
