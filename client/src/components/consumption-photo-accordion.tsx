@@ -219,7 +219,7 @@ const ConsumptionPhotoAccordion = ({ consumption }: {
         {!object[0] && (reqState !== 'loading') &&
           <div className="relative">
             {!photos.length ?
-              <h1 className="text-center p-2 m-4 text-white">No bing photo</h1> :
+              <h1 className="text-center p-2 m-4 text-white">No binding photo</h1> :
               <Carousel photos={photos} />
             }
             <label className="absolute bottom-3 right-3 cursor-pointer">

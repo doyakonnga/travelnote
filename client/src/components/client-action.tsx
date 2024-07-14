@@ -2,8 +2,9 @@
 'use client'
 
 import axios from "axios"
-import { getUploadUrl } from "./actions"
+import { getUploadUrl, revalidatePath } from "./actions"
 import { Sha256 } from "@aws-crypto/sha256-browser"
+import { usePathname } from "next/navigation"
 
 export const Renew = () => {
   fetch('/api/v1/users/renewtoken').then().catch(()=>{})
@@ -21,4 +22,10 @@ export const uploadToS3 = async (file: File) => {
   if (typeof uploadUrl !== 'string') throw Error(uploadUrl.error)
   await axios.put(uploadUrl, file, { headers: { "Content-Type": type } })
   return uploadUrl.split('?')[0]
+}
+
+export const revalidateCost = (path: string) => {
+  const basePath = path.split('/').slice(0, -1).join('/') + '/';
+  ['consumptions', 'expenses', 'balances'].forEach(
+    route => revalidatePath(basePath + route))
 }

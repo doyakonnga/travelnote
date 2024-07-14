@@ -30,9 +30,7 @@ expenseRouter.patch("/:expenseId",
     if (typeof a !== 'number') throw new Error('amount must be number')
   }),
   async (req: Request, res: Response) => {
-    console.log(validationResult(req))
     if (!validationResult(req).isEmpty())
-
       throw 'express-validator errors'
     let query: ExpenseQuery = { id: req.params.expenseId }
     const { isPaid, description, amount } = req.body

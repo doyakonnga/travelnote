@@ -51,7 +51,7 @@ const SelectionBar = () => {
         <li className="flex-1">
           <Link
             href="#"
-            className={('albums' === curPath) ? current : option}
+            className={('notifications' === curPath) ? current : option}
           >
             Notification
           </Link>

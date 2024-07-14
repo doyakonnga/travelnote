@@ -5,8 +5,10 @@ import { useState, useRef } from "react"
 import { useFormState, useFormStatus } from "react-dom"
 import Alert from "./alert"
 import { usePathname, useRouter } from "next/navigation"
+import { revalidatePath } from "./actions"
 import Spinner from "./spinner"
 import { randomBytes } from "crypto"
+import { revalidateCost } from "./client-action"
 
 interface ExpenAttr {
   userId: string
@@ -22,7 +24,7 @@ const ButtonBar = ({ onClear }: { onClear: () => void }) => {
   return pending ? <Spinner /> : (
     <div className="flex justify-between">
       <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
-        onClick={() => onClear}
+        onClick={onClear}
       >
         Clear
       </button>
@@ -37,9 +39,10 @@ const ButtonBar = ({ onClear }: { onClear: () => void }) => {
 const CreateConsumptionForm = ({ journeyId, users }: {
   journeyId: string; users: Member[]
 }) => {
-  // const path = usePathname()
+  const path = usePathname()
   const ref = useRef<HTMLFormElement>(null)
   const router = useRouter()
+  const [isForeign, setIsForeign] = useState(false)
   const [amounts, setAmounts] = useState<{ [key: string]: number }>({
     total: 0,
     ...users.reduce((acc, cur) => { return { ...acc, [cur.id]: 0 } }, {})
@@ -71,16 +74,17 @@ const CreateConsumptionForm = ({ journeyId, users }: {
         Object.keys(prev).forEach((key) => prev[key] = 0)
         return { ...prev }
       })
+      revalidateCost(path)
       router.refresh()
       return {
         result: 'success',
         id: randomBytes(4).toString(),
-        message: 'created successfully'
+        message: 'The consumption has been created.'
       }
     } catch (e) {
       console.log(e)
-      let message = (e instanceof Error)?
-        e.message: 'Operation failed, try again later.'
+      let message = (e instanceof Error) ?
+        e.message : 'Operation failed, try again later.'
       return {
         result: 'failure',
         id: randomBytes(4).toString(),
@@ -103,11 +107,12 @@ const CreateConsumptionForm = ({ journeyId, users }: {
       </div>
       <div className="flex">
         <div className="w-4/12 flex items-center space-x-2">
-          <input type="checkbox" id='isForeign' name='isForeign' value='true' />
+          <input type="checkbox" id='isForeign' name='isForeign' value='true'
+          checked={isForeign} onChange={() => setIsForeign(p => !p)}/>
           <label htmlFor="isForeign" className="flex items-center mx-1"> is foreign currency</label>
         </div>
         <input type="number" step="any" id='rate' name='rate'
-          placeholder="Exchange Rate"
+          placeholder="Exchange Rate" disabled={ !isForeign }
           className="mt-1 p-1 w-40 border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
         />
       </div>

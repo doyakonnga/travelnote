@@ -6,10 +6,11 @@ import { useEffect, useState } from "react"
 import EditConsumptionModal from '@/components/edit-consumption-modal'
 import Alert from "./alert"
 import ConfirmModal from "./confirm-modal"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { randomBytes } from "crypto"
 import Spinner from "./spinner"
 import ConsumptionPhotoAccordion from "./consumption-photo-accordion"
+import { revalidateCost } from "./client-action"
 
 
 const editButton = (props: {}) => (<svg
@@ -54,6 +55,7 @@ const ConsumptionCard = ({ consumption, members }: {
   consumption: Consumption
   members: Member[]
 }) => {
+  const path = usePathname()
   const router = useRouter()
   const { editable, isForeign } = consumption
   const payingUser = members.find(m => m.id === consumption.payingUserId)
@@ -80,6 +82,7 @@ const ConsumptionCard = ({ consumption, members }: {
         })
         return { ...prev, expenses: exs }
       }))
+      revalidateCost(path)
       setReqState({
         result: 'success',
         id: randomBytes(4).toString(),
@@ -202,6 +205,7 @@ const ConsumptionCard = ({ consumption, members }: {
               setReqState({
                 result: 'success', id: randomId, message
               })
+              revalidateCost(path)
               router.replace(
                 `/${consumption.journeyId}/consumptions?id=${randomId}&message=${message}`
               )

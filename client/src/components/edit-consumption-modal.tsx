@@ -7,6 +7,8 @@ import { Dispatch, SetStateAction, useState } from "react"
 import { randomBytes } from "crypto"
 import { refresh } from "./actions"
 import Spinner from "./spinner"
+import { revalidateCost } from "./client-action"
+import { usePathname } from "next/navigation"
 
 
 interface FormState {
@@ -14,9 +16,9 @@ interface FormState {
   message: string
 }
 
-const ButtonBar = ({ handleClose }: { handleClose: ()=> void }) => {
+const ButtonBar = ({ handleClose }: { handleClose: () => void }) => {
   const { pending } = useFormStatus()
-  return pending? <Spinner/>: (
+  return pending ? <Spinner /> : (
     <div className="flex justify-between">
       <button type="button" className="my-3 w-5/12 max-w-60 flex justify-center bg-gray-100 text-stone-800 p-2 rounded-md tracking-wide hover:bg-neutral-50 focus:outline-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-50 transition-colors duration-200"
         onClick={() => { handleClose() }}
@@ -36,6 +38,8 @@ const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose
   users: Member[];
   handleClose: (id?: string, message?: string) => void
 }) => {
+  const path = usePathname()
+  const [isForeign, setIsForeign] = useState(consumption.isForeign)
   const handleSave = async (
     prevState: FormState,
     formData: FormData
@@ -60,6 +64,7 @@ const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose
       setConsumpState(data.consumption as Consumption)
       const id = randomBytes(4).toString('ascii')
       handleClose(id, 'Success; Consumption has been edited.')
+      revalidateCost(path)
       return {
         id,
         message: 'success'
@@ -86,11 +91,15 @@ const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose
             <input type="text" name="item" placeholder="Item name" className="w-10/12 mt-1 p-1 rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300" defaultValue={consumption.name} />
           </div>
           <div className="flex items-center space-x-2">
-            <input type="checkbox" id='isForeign' name='isForeign' value='true' defaultChecked={consumption.isForeign} />
+            <input type="checkbox" id='isForeign' name='isForeign' value='true'
+              // defaultChecked={consumption.isForeign}
+              checked={isForeign} onChange={() => setIsForeign( p => !p)} 
+            />
             <label htmlFor="isForeign" className="mx-1"> is foreign currency</label>
           </div>
           <input type="number" step="any" id='rate' name='rate'
             placeholder="Exchange Rate" defaultValue={consumption.rate}
+            disabled={ !isForeign }
             className="mt-1 p-1 w-40 border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300"
           />
 
@@ -108,8 +117,8 @@ const EditConsumptionModal = ({ consumption, setConsumpState, users, handleClose
               />
             </div>
           ))}
-          
-          <ButtonBar handleClose={handleClose}/>
+
+          <ButtonBar handleClose={handleClose} />
 
           {formState.message === 'failure' && <Alert color={"red"} id={formState.id}> Adding failure! </Alert>}
 
