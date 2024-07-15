@@ -44,7 +44,7 @@ const LoginPage = () => {
 
       <div className="mt-4 text-sm text-gray-600 text-center">
         <p>
-          Already have an account?{" "}
+          Not have an account?{" "}
           <Link href="/signup" className="text-black hover:underline">
             Sign up here
           </Link>

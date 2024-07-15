@@ -9,11 +9,12 @@ import { OldBin, OldEditing, OldInviting } from "./svg"
 import { randomBytes } from "crypto"
 import Spinner from "./spinner"
 import { uploadToS3 } from "./client-action"
-import { deleteFromS3 } from "./actions"
+import { deleteFromS3, revalidatePath } from "./actions"
+import { useRouter } from "next/navigation"
 
 interface Props {
   id: string
-  title: string
+  name: string
   subtitle: string | null
   picture: string | null
 }
@@ -28,14 +29,15 @@ type Uploaded = { file: File, objectUrl: string } | null
 const randomId = () => randomBytes(4).toString('ascii')
 
 const JourneyCard = (props: Props) => {
-  const { id, title, subtitle, picture } = props
+  const router = useRouter()
+  const { id, name, subtitle, picture } = props
   // 1: inviting, 2: editing, 3: quiting
   const [option, setOption] = useState<Option>(0)
   // Option1, Inviting
   const [keyword, setKeyword] = useState('')
   const [foundUser, setFoundUser] = useState<User | null>(null)
   // Option 2, Editing
-  const [query, setQuery] = useState({ id, title, subtitle, picture })
+  const [query, setQuery] = useState({ id, name, subtitle, picture })
   const [uploaded, setUploaded] = useState<Uploaded>(null)
 
   const [confirmModal, setConfirmModal] = useState('')
@@ -65,25 +67,26 @@ const JourneyCard = (props: Props) => {
     if (uploaded?.objectUrl)
       URL.revokeObjectURL(uploaded.objectUrl)
     setUploaded(null)
-    setQuery({ id, title, subtitle, picture })
+    setQuery({ id, name, subtitle, picture })
   }
   const handleSave = async () => {
     try {
-      if (!query.title)
+      if (!query.name)
         throw new Error('Please input valid title.')
       setLoading(true)
       let s3Url: string | undefined = undefined
       if (uploaded)
         s3Url = await uploadToS3(uploaded.file)
       const { data } = await axios.patch(
-        `/api/v1/journeys/${query.id}`, { ...query, picture: s3Url})
+        `/api/v1/journeys/${query.id}`, { ...query, picture: s3Url })
       const { id, name, subtitle, picture }: Props & { name: string } = data.journey
       deleteFromS3(query.picture || '')
-      setQuery({ id, title: name, subtitle, picture })
+      setQuery({ id, name, subtitle, picture })
       setOption(0)
       if (uploaded?.objectUrl)
         URL.revokeObjectURL(uploaded.objectUrl)
       setUploaded(null)
+      revalidatePath('/edit')
       setReqState({
         id: randomId(),
         result: 'ok',
@@ -94,9 +97,9 @@ const JourneyCard = (props: Props) => {
     } finally { setLoading(false) }
   }
   const handleConfirm = async () => {
-    if (option === 1) {
-      try {
-        setLoading(true)
+    try {
+      setLoading(true)
+      if (option === 1) {
         if (!foundUser) throw new Error('user not found')
         await axios.post('/api/v1/journeys/members', {
           journeyId: id,
@@ -109,19 +112,20 @@ const JourneyCard = (props: Props) => {
           result: 'ok',
           message: 'The user has been invited to the journey.'
         })
-      } catch (e) {
-        handleError(e)
-      } finally {
-        setConfirmModal('')
-        setLoading(false)
-      }
-    } else if (option === 3) {
-      try {
+      } else if (option === 3) {
         await axios.patch('/api/v1/journeys/members', {
-          journeyId: id,
-          quitingMemberId: ''
+          journeyId: id
         })
-      } catch (e) { console.log(e) }
+
+        revalidatePath('/') 
+        revalidatePath('/edit')
+        router.replace(`/edit?msg=you have quit the journey "${name}"&id=${randomBytes(4).toString('hex')}`)
+      }
+    } catch (e) {
+      handleError(e)
+    } finally {
+      setConfirmModal('')
+      setLoading(false)
     }
   }
 
@@ -129,7 +133,10 @@ const JourneyCard = (props: Props) => {
     <div key={id} className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 p-4 mx-auto z-10">
       <div className="bg-white p-6 rounded-lg grid grid-cols-2">
         {/* Picture */}
-        {loading ? <Spinner /> :
+        {loading ?
+          <div className="col-span-2 flex justify-center items-center h-72">
+            <Spinner />
+          </div> :
           option === 2 ?
             <label className="col-span-2 cursor-pointer" htmlFor="file">
               <Image className="h-72 rounded w-full object-cover object-center mb-6"
@@ -139,7 +146,7 @@ const JourneyCard = (props: Props) => {
             </label>
             :
             <Image className="h-72 col-span-2 rounded w-full object-cover object-center mb-6"
-              src={query.picture || '/landscape.jpg'}
+              src={picture || '/landscape.jpg'}
               alt="journey picture" width={720} height={400} />
         }
         {/* Title(Name) */}
@@ -147,10 +154,10 @@ const JourneyCard = (props: Props) => {
           <div className="mb-4 inline-block">
             <label htmlFor="title">Title: </label>
             <input id="title" type="text" className="border-2 border-gray-300 bg-white h-10 mx-2 px-3 rounded-lg text-sm focus:outline-none"
-              value={query.title || ''}
-              onChange={e => setQuery(p => ({ ...p, title: e.target.value }))} />
+              value={query.name || ''}
+              onChange={e => setQuery(p => ({ ...p, name: e.target.value }))} />
           </div> :
-          <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{query.title}</h1>
+          <h1 className="text-lg text-gray-900 font-medium title-font mb-4 inline-block">{name}</h1>
         }
         {/* Option Selection Buttons */}
         <div className="inline-block ml-auto">
@@ -158,7 +165,7 @@ const JourneyCard = (props: Props) => {
           <OldEditing selected={option === 2} onClick={() => changeOption(2)} />
           <OldBin onClick={() => {
             changeOption(3)
-            setConfirmModal('Are you sure you want to quit the journey? Please note that if you are last user, all of data in this group will be lost permanently.')
+            setConfirmModal('Are you sure you want to quit the journey? Please note that if you are the last member, all of data in this group will be lost permanently.')
           }} />
         </div>
         {/* Subtitle */}
@@ -168,7 +175,7 @@ const JourneyCard = (props: Props) => {
             <input id="subtitle" className="border-2 border-gray-300 bg-white h-10 mx-2 px-3 rounded-lg text-sm focus:outline-none" type="text" value={query.subtitle || ''}
               onChange={e => setQuery(p => ({ ...p, subtitle: e.target.value }))} />
           </div> :
-          <p className="leading-relaxed text-base">{query.subtitle}</p>
+          <p className="leading-relaxed text-base">{subtitle}</p>
         }
         {/* Save and Cancel */}
         {option === 2 &&
@@ -210,7 +217,15 @@ const JourneyCard = (props: Props) => {
                   setLoading(true)
                   fetch(`/api/v1/users?email=${keyword}`)
                     .then((response) => response.json())
-                    .then((data) => setFoundUser(data.user))
+                    .then((data) => {
+                      if (!data.user)
+                        setReqState({
+                          id: randomId(),
+                          result: 'err',
+                          message: 'Matching user not found'
+                        })
+                      setFoundUser(data.user)
+                    })
                     .catch((err) => console.log(err))
                     .finally(() => setLoading(false))
                 }}
@@ -239,7 +254,7 @@ const JourneyCard = (props: Props) => {
         }
         {(option === 1) && foundUser &&
           <div className="flex space-3">
-            <div className="shrink-0 w-3/12 min-w-32 ml-auto space-x-1 flex items-center">
+            <div className="shrink-0 w-3/12 min-w-32 space-x-1 flex items-center">
               <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={foundUser.avatar || '/user.png'} alt="user avatar" />
               <span>{foundUser.name}</span>
             </div>

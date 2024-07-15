@@ -12,15 +12,16 @@ const AlbumPage = async ({ params }: {
   let album: Album | null = null
   let photos: Photo[] = []
   try {
-    const { data } = await axios
-      .get(`${process.env.NGINX_HOST}/api/v1/albums/${aId}?journeyId=${jId}`,
-        {
-          headers: {
-            Host: "travelnote.com",
-            Cookie
-          }
-        })
+    const [{ data }, { data: data2 }] = await Promise.all([
+      axios.get(
+        `${process.env.NGINX_HOST}/api/v1/albums/${aId}?journeyId=${jId}&albumId=`,
+        { headers: { Host: "travelnote.com", Cookie } }),
+      axios.get(
+        `${process.env.NGINX_HOST}/api/v1/photos/?journeyId=${jId}&albumId=${aId}`,
+        { headers: { Host: "travelnote.com", Cookie } }),
+    ])
     album = data.album
+    photos = data2.photos
   } catch (e) {
     console.log(e)
   }
@@ -33,7 +34,7 @@ const AlbumPage = async ({ params }: {
         <span>{' >> '}</span>
         <Link href="#" className="hover:text-blue-500">{album.name}</Link>
       </div>
-      <PhotoPanel photos={album.photos} />
+      <PhotoPanel photos={photos} />
     </div>
   )
 }

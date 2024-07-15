@@ -7,9 +7,10 @@ import { Sha256 } from '@aws-crypto/sha256-browser'
 import { randomBytes } from "crypto"
 import Alert from "./alert"
 import { redirect, usePathname, useRouter } from "next/navigation"
-import { revalidatePath } from "next/cache"
+import { revalidatePath } from "./actions"
 
 const CreateJourneyForm = () => {
+  const router = useRouter()
   // const [object, setObject] = useState<File | undefined>(undefined)
   const [name, setName] = useState('')
   const [objectUrl, setObjectUrl] = useState('')
@@ -83,11 +84,14 @@ const CreateJourneyForm = () => {
     })
     setLoading(true)
     try {
-      axios.post('/api/v1/journey', {
+      await axios.post('/api/v1/journeys', {
         name,
         // subtitle,
         picture: s3url,
       })
+      revalidatePath('/')
+      revalidatePath('/edit')
+      router.refresh()
     } catch (e) { console.log(e) }
     refresh()
   }

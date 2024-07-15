@@ -30,7 +30,7 @@ const Chart = ({ data }: { data: Data }) => {
       <BarChart
         data={data}
         layout="vertical"
-        margin={{ left: 30, right: 50 + BAR_AXIS_SPACE }}
+        margin={{ left: 50, right: 50 + BAR_AXIS_SPACE }}
       >
         <XAxis axisLine={true} type="number" />
         <YAxis

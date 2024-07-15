@@ -64,6 +64,7 @@ declare global {
     description: string | null;
     userId: string;
     createdAt: Date;
+    editable: boolean;
     albumId: string;
     consumptionId: string
   }
@@ -83,10 +84,7 @@ declare global {
 
 
 export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+  children }: { children: React.ReactNode }) {
   const Cookie = cookies().getAll().map((c) => {
     return `${c.name}=${c.value};`
   }).join(' ')

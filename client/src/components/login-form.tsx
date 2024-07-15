@@ -85,7 +85,6 @@ const LoginForm = () => {
   return (
     <form action={formAction} className="space-y-4">
       {/* Your form elements go here */}
-      {formState.id}
       <div>
         <label
           htmlFor="email"

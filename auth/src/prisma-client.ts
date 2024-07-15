@@ -85,9 +85,8 @@ export async function userJourneys(userId: string) {
         }
       }
     },
-    include: {
-      members: true
-    }
+    include: { members: true },
+    orderBy: { createdAt: 'desc' }
   })
 }
 
@@ -123,7 +122,7 @@ export async function patchJourney(attr: JourneyWithId) {
       name,
       subtitle,
       picture,
-      members: members? {
+      members: members ? {
         set: [],
         connect: members
       } : undefined

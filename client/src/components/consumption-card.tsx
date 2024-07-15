@@ -145,7 +145,7 @@ const ConsumptionCard = ({ consumption, members }: {
                   <label htmlFor="isPaid"> is paid</label>
                 </div>
               }
-              <div className="shrink-0 w-3/12 min-w-32 ml-auto space-x-1">
+              <div className="shrink-0 w-4/12 min-w-32 ml-auto space-x-1">
                 <img className="inline flex-shrink-0 object-cover mx-1 rounded-full w-7 h-7" src={user?.avatar || '/user.png'} alt="user avatar" />
                 <span>{(user?.name || "user")}</span>
               </div>

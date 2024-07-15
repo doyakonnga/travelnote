@@ -6,10 +6,10 @@ import { body } from 'express-validator'
 
 export const journeyMemberRouter = express.Router()
 
-const isArrayOfString = (field: any) => {
+const isArrayOfMembers = (field: any) => {
   if (!Array.isArray(field)) return false
   for (const m of field) {
-    if (typeof m !== 'string') return false
+    if (typeof m.id !== 'string') return false
   }
   return true
 }
@@ -20,13 +20,12 @@ journeyMemberRouter.use(
 )
 
 journeyMemberRouter.post('/',
-  body('members').custom(isArrayOfString)
-    .withMessage('body.members must be string[]'),
+  body('members').custom(isArrayOfMembers)
+    .withMessage('body.members must be {id: string}[]'),
   validation,
   async (req, res) => {
     const id: string = req.body.journeyId
-    const members: { id: string }[] =
-      req.body.members.map((id: string) => ({ id }))
+    const members: { id: string }[] = req.body.members
     const journey = await addMember({ id, members })
 
     const producer = redpanda.producer

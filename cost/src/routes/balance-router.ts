@@ -36,9 +36,11 @@ balanceRouter.get('/',
         denominator += ex.amount
       }
     })
+
+    const defaultRate = Math.floor((numerator / denominator) * 1000) / 1000
     return res.status(200).json({ 
       balances, 
-      defaultRate: numerator / denominator || 0 
+      defaultRate: defaultRate || 0 
     })
 
   }

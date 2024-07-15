@@ -42,7 +42,10 @@ const JourneyLayout = async ({ params, children }: {
   return (
     <div className="w-full flex items-center justify-center">
       <div className="max-w-4xl w-full p-6">
-        <h1 className="text-2xl font-semibold mb-6 text-black text-center"></h1>
+        <h1 className="text-xl font-semibold mb-6 text-black">
+          <a href="/" className="hover:text-blue-500">My journeys</a>
+          {` >> ${journey.name}`}
+        </h1>
         <CreateConsumptionForm journeyId={journey.id} users={journey.members} />
         <SelectionBar></SelectionBar>
         {children}
